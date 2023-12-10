@@ -13,7 +13,19 @@ const config: Config = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
-    },
+      gridTemplateColumns: {
+        '25': 'repeat(25, minmax(0, 1fr))'
+      },
+      gridTemplateRows: {
+        '25': 'repeat(25, minmax(0, 1fr))'
+      },
+      minWidth: {
+        'game-width': '720px'
+      },
+      minHeight: {
+        'game-height': '720px'
+      },
+    }, 
   },
   plugins: [],
 }
