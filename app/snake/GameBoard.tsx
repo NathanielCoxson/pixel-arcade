@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 export default function GameBoard() {
     enum Direction {
@@ -16,16 +16,12 @@ export default function GameBoard() {
  
     const [currentDirection, setCurrentDirection] = useState<Direction>(Direction.Right);
     const [currentLocation, setCurrentLocation] = useState<Coordinate>({row: 0, col: 0});
+    const [snakeQueue, setSnakeQueue] = useState<Array<number>>([0]);
+    const movementInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const ROWS: number = 25;
     const COLS: number = 25;
-
-    function onPixelClick(event: any) {
-        const cellNumber: number = Number(event.target.id.slice(5));
-        const col: number = cellNumber % COLS;
-        const row: number = Math.floor(cellNumber / ROWS);
-
-        event.target.style.backgroundColor = 'black';
-    }
+    const ON_COLOR: string = 'black';
+    const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
 
     /**
      * Performs a direction change when the user presses down on one 
@@ -38,7 +34,24 @@ export default function GameBoard() {
         switch(key) {
             case 'ArrowUp':
                 setCurrentDirection(Direction.Up);
-                // Move up if possible
+                break;
+            case 'ArrowDown':
+                setCurrentDirection(Direction.Down);
+                break;
+            case 'ArrowLeft':
+                setCurrentDirection(Direction.Left);
+                break;
+            case 'ArrowRight':
+                setCurrentDirection(Direction.Right);
+                break;
+            default:
+                break;
+        }
+    }, [Direction])
+
+    const moveSnake = useCallback(() => {
+        switch (currentDirection) {
+            case Direction.Up:
                 if (currentLocation.row > 0) {
                     setCurrentLocation((prev: Coordinate) => {
                         return {
@@ -48,9 +61,7 @@ export default function GameBoard() {
                     });
                 }
                 break;
-            case 'ArrowDown':
-                setCurrentDirection(Direction.Down);
-                // Move down if possible
+            case Direction.Down:
                 if (currentLocation.row < ROWS - 1) {
                     setCurrentLocation((prev: Coordinate) => {
                         return {
@@ -60,9 +71,7 @@ export default function GameBoard() {
                     });
                 }
                 break;
-            case 'ArrowLeft':
-                setCurrentDirection(Direction.Left);
-                // Move down if possible
+            case Direction.Left:
                 if (currentLocation.col > 0) {
                     setCurrentLocation((prev: Coordinate) => {
                         return {
@@ -72,10 +81,10 @@ export default function GameBoard() {
                     });
                 }
                 break;
-            case 'ArrowRight':
-                setCurrentDirection(Direction.Right);
-                // Move down if possible
+            case Direction.Right:
                 if (currentLocation.col < COLS - 1) {
+                    let tail = document.getElementById(`cell-${snakeQueue[0]}`);
+                    if (tail) tail.style.backgroundColor = 'white';
                     setCurrentLocation((prev: Coordinate) => {
                         return {
                             ...prev,
@@ -83,56 +92,167 @@ export default function GameBoard() {
                         }
                     });
                 }
+                else {
+                    console.log("Game over");
+                    
+                }
                 break;
             default:
                 break;
         }
-    }, [currentLocation, Direction])
+    }, [Direction, currentDirection, currentLocation])
 
     /**
      * Returns the number of the cell represented by the given coordinate row and column.
      * Example: {row: 1, col: 0} => ROWS * 1 + 0
      * @param {Coordinate} location
      */
-    const getCellFromCoordinates = useCallback((location: Coordinate): number => {
+    function getCellIdFromCoordinates (location: Coordinate): number {
         return (location.row * ROWS + location.col);
-    }, [])
+    }
+  
+    // useEffect(() => {
+    //     // Adds a keydown event listener to the document when the component mounts and
+    //     // removes it when the component unmounts. 
+    //     document.addEventListener('keydown', onArrowKeyDown);
 
-    useEffect(() => {
-        // Adds a keydown event listener to the document when the component mounts and
-        // removes it when the component unmounts. 
-        document.addEventListener('keydown', onArrowKeyDown);
+    //     // Sets the initial character position on the screen when the component mounts
+    //     let startingCell = document.getElementById(`cell-${getCellFromCoordinates({row: 0, col: 0})}`);
+    //     if (startingCell) startingCell.style.backgroundColor = 'black';
 
-        // Sets the initial character position on the screen when the component mounts
-        let startingCell = document.getElementById(`cell-${getCellFromCoordinates({row: 0, col: 0})}`);
-        if (startingCell) startingCell.style.backgroundColor = 'black';
+    //     return () => {
+    //         document.removeEventListener('keydown', onArrowKeyDown);
+    //     }
+    // }, [onArrowKeyDown, getCellFromCoordinates, moveSnake])
 
-        return () => {
-            document.removeEventListener('keydown', onArrowKeyDown);
+    // useEffect(() => {
+    //     // Set an interval to make the snake move.
+    //     movementInterval.current = setInterval(moveSnake, 500);
+    //     console.log('interval set')
+
+    //     return () => {
+    //         clearInterval(movementInterval.current as NodeJS.Timeout);
+    //     }
+    // }, [moveSnake])
+
+    // // Updates the cell corresponding to each location update.
+    // useEffect(() => {
+    //     console.log(currentLocation);
+    //     let cell = document.getElementById(`cell-${getCellFromCoordinates(currentLocation)}`);
+    //     if (cell) cell.style.backgroundColor = 'black';
+    // }, [currentLocation, getCellFromCoordinates])
+
+    /**
+     * Sets the background of the cell with the given id to the on color.
+     * @param {Coordinate} location 
+     */
+    function enableCell(location: Coordinate): void {
+        const id = getCellIdFromCoordinates(location);
+        const cell = document.getElementById(`cell-${id}`);
+        if (cell) {
+            cell.style.backgroundColor = ON_COLOR;
         }
-    }, [onArrowKeyDown, getCellFromCoordinates])
+    }
 
-    useEffect(() => {
-        console.log(currentLocation);
-        let cell = document.getElementById(`cell-${getCellFromCoordinates(currentLocation)}`);
-        if (cell) cell.style.backgroundColor = 'black';
-    }, [currentLocation, getCellFromCoordinates])
-    
+    /**
+     * Sets the background of the cell with the given id to the off color.
+     * @param {Coordinate} location  
+     */
+    function disableCell(location: Coordinate): void {
+        const id = getCellIdFromCoordinates(location);
+        const cell = document.getElementById(`cell-${id}`);
+        if (cell) {
+            cell.style.backgroundColor = OFF_COLOR;
+        }
+    }
+
+    /**
+     * Returns the resulting coordinate by moving one step in the given direction
+     * beginning at the starting coordinate.
+     * @param {Coordinate} start 
+     * @param {Direction} direction 
+     * @returns {Coordinate}
+     */
+    function move(start: Coordinate, direction: Direction = Direction.Right): Coordinate {
+        let newLocation = {...start};
+        if (direction == Direction.Up) {
+            newLocation.row -= 1;
+        }
+        else if (direction == Direction.Down) {
+            newLocation.row += 1;
+        }
+        else if (direction == Direction.Left) {
+            newLocation.col -= 1;
+        }
+        else if (direction == Direction.Right) {
+            newLocation.col += 1;
+        }
+        return newLocation;
+    }
+
+    function playGame() {
+        
+        let head: Coordinate = {row: 0, col: 0};
+        enableCell(head);
+        let currDirection: Direction | undefined = Direction.Right;
+
+        // Sets the current direction when an arrow key is pressed down.
+        document.addEventListener('keydown', (event) => {
+            const key: String = event.key;
+            const arrowKeys: Map<String, Direction> = new Map([
+                ["ArrowUp", Direction.Up],
+                ["ArrowDown", Direction.Down],
+                ["ArrowLeft", Direction.Left],
+                ["ArrowRight", Direction.Right],
+            ]);
+
+            if (arrowKeys.has(key)) {
+                currDirection = arrowKeys.get(key);
+            }
+        });
+
+        // Movement interval
+        let interval = setInterval(() => {
+            disableCell(head);
+            head = move(head, currDirection);
+            if (head.row < ROWS && head.row >= 0 && head.col < COLS && head.col >= 0) {
+                enableCell(head);
+                console.log(head);
+            }
+            else {
+                console.log("Game over");
+                clearInterval(interval);
+            }
+        }, 500);
+
+    }
+
+
     return (
         <section>
-            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800 rounded-md">
+            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
                 {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
                     <div
                         key={`pixel-${i}`}
                         id={`cell-${i}`}
-                        onClick={onPixelClick}
-                        className="w-full h-full hover:bg-slate-400 cursor-pointer"
+                        className="w-full h-full"
                     />
                 )}
             </div>
-            <div>
+            <div className="flex gap-4 items-center py-4">
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
                 <h3 className="font-semibold">Controls:</h3>
+                <button 
+                    className="border border-black p-1 hover:bg-green-400"
+                    onClick={playGame}
+                >
+                    Play
+                </button>
+                <button 
+                    className="border border-black p-1 hover:bg-green-400"
+                >
+                    Pause
+                </button>
             </div>
         </section>
 
