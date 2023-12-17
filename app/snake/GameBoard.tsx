@@ -9,13 +9,10 @@ export default function GameBoard() {
         Left,
         Right,
     }
-    type Coordinate = {
-        row: number,
-        col: number,
-    }
+    type Coordinate = [number, number];
  
     const [currentDirection, setCurrentDirection] = useState<Direction>(Direction.Right);
-    const [currentLocation, setCurrentLocation] = useState<Coordinate>({row: 0, col: 0});
+    const [currentLocation, setCurrentLocation] = useState<Coordinate>([0, 0]);
     const [snakeQueue, setSnakeQueue] = useState<Array<number>>([0]);
     const movementInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const ROWS: number = 25;
@@ -28,79 +25,79 @@ export default function GameBoard() {
      * of the arrow keys.
      * @param event 
      */
-    const onArrowKeyDown = useCallback((event: any) => {
-        const key = event.key;
+    // const onArrowKeyDown = useCallback((event: any) => {
+    //     const key = event.key;
 
-        switch(key) {
-            case 'ArrowUp':
-                setCurrentDirection(Direction.Up);
-                break;
-            case 'ArrowDown':
-                setCurrentDirection(Direction.Down);
-                break;
-            case 'ArrowLeft':
-                setCurrentDirection(Direction.Left);
-                break;
-            case 'ArrowRight':
-                setCurrentDirection(Direction.Right);
-                break;
-            default:
-                break;
-        }
-    }, [Direction])
+    //     switch(key) {
+    //         case 'ArrowUp':
+    //             setCurrentDirection(Direction.Up);
+    //             break;
+    //         case 'ArrowDown':
+    //             setCurrentDirection(Direction.Down);
+    //             break;
+    //         case 'ArrowLeft':
+    //             setCurrentDirection(Direction.Left);
+    //             break;
+    //         case 'ArrowRight':
+    //             setCurrentDirection(Direction.Right);
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }, [Direction])
 
-    const moveSnake = useCallback(() => {
-        switch (currentDirection) {
-            case Direction.Up:
-                if (currentLocation.row > 0) {
-                    setCurrentLocation((prev: Coordinate) => {
-                        return {
-                            ...prev,
-                            row: prev.row - 1,
-                        }
-                    });
-                }
-                break;
-            case Direction.Down:
-                if (currentLocation.row < ROWS - 1) {
-                    setCurrentLocation((prev: Coordinate) => {
-                        return {
-                            ...prev,
-                            row: prev.row + 1,
-                        }
-                    });
-                }
-                break;
-            case Direction.Left:
-                if (currentLocation.col > 0) {
-                    setCurrentLocation((prev: Coordinate) => {
-                        return {
-                            ...prev,
-                            col: prev.col - 1,
-                        }
-                    });
-                }
-                break;
-            case Direction.Right:
-                if (currentLocation.col < COLS - 1) {
-                    let tail = document.getElementById(`cell-${snakeQueue[0]}`);
-                    if (tail) tail.style.backgroundColor = 'white';
-                    setCurrentLocation((prev: Coordinate) => {
-                        return {
-                            ...prev,
-                            col: prev.col + 1,
-                        }
-                    });
-                }
-                else {
-                    console.log("Game over");
+    // const moveSnake = useCallback(() => {
+    //     switch (currentDirection) {
+    //         case Direction.Up:
+    //             if (currentLocation.row > 0) {
+    //                 setCurrentLocation((prev: Coordinate) => {
+    //                     return {
+    //                         ...prev,
+    //                         row: prev.row - 1,
+    //                     }
+    //                 });
+    //             }
+    //             break;
+    //         case Direction.Down:
+    //             if (currentLocation.row < ROWS - 1) {
+    //                 setCurrentLocation((prev: Coordinate) => {
+    //                     return {
+    //                         ...prev,
+    //                         row: prev.row + 1,
+    //                     }
+    //                 });
+    //             }
+    //             break;
+    //         case Direction.Left:
+    //             if (currentLocation.col > 0) {
+    //                 setCurrentLocation((prev: Coordinate) => {
+    //                     return {
+    //                         ...prev,
+    //                         col: prev.col - 1,
+    //                     }
+    //                 });
+    //             }
+    //             break;
+    //         case Direction.Right:
+    //             if (currentLocation.col < COLS - 1) {
+    //                 let tail = document.getElementById(`cell-${snakeQueue[0]}`);
+    //                 if (tail) tail.style.backgroundColor = 'white';
+    //                 setCurrentLocation((prev: Coordinate) => {
+    //                     return {
+    //                         ...prev,
+    //                         col: prev.col + 1,
+    //                     }
+    //                 });
+    //             }
+    //             else {
+    //                 console.log("Game over");
                     
-                }
-                break;
-            default:
-                break;
-        }
-    }, [Direction, currentDirection, currentLocation])
+    //             }
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }, [Direction, currentDirection, currentLocation])
 
     /**
      * Returns the number of the cell represented by the given coordinate row and column.
@@ -108,7 +105,7 @@ export default function GameBoard() {
      * @param {Coordinate} location
      */
     function getCellIdFromCoordinates (location: Coordinate): number {
-        return (location.row * ROWS + location.col);
+        return (location[0] * ROWS + location[1]);
     }
   
     // useEffect(() => {
@@ -165,6 +162,16 @@ export default function GameBoard() {
             cell.style.backgroundColor = OFF_COLOR;
         }
     }
+    
+    /**
+     * Places food at a random location on the screen and returns the coordinate
+     * location of that food so the board can be updated.
+     * @param {number[][]} board The current board
+     * @returns {Coordinate} The location of the food that was placed.
+     */
+    function placeFood(board: number[][]): Coordinate {
+        return [0, 0];
+    }
 
     /**
      * Returns the resulting coordinate by moving one step in the given direction
@@ -176,24 +183,43 @@ export default function GameBoard() {
     function move(start: Coordinate, direction: Direction = Direction.Right): Coordinate {
         let newLocation = {...start};
         if (direction == Direction.Up) {
-            newLocation.row -= 1;
+            newLocation[0] -= 1;
         }
         else if (direction == Direction.Down) {
-            newLocation.row += 1;
+            newLocation[0] += 1;
         }
         else if (direction == Direction.Left) {
-            newLocation.col -= 1;
+            newLocation[1] -= 1;
         }
         else if (direction == Direction.Right) {
-            newLocation.col += 1;
+            newLocation[1] += 1;
         }
         return newLocation;
     }
 
     function playGame() {
-        
-        let head: Coordinate = {row: 0, col: 0};
-        enableCell(head);
+        // Snake properties
+        let head: Coordinate = [0, 7];
+        let snakeCoords: Coordinate[] = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], head];
+
+        // Board
+        const board: number[][] = [];
+        for (let i = 0; i < ROWS; i++) {
+            board.push(new Array());
+            for (let j = 0; j < COLS; j++) {
+                board[i].push(0);
+            }
+        }
+        for (let pos of snakeCoords) {
+            board[pos[0]][pos[1]] = 1;
+        }
+
+        console.log(board);
+
+        // Initialize beginning cell
+        for (let i = 0; i < snakeCoords.length; i++) {
+            enableCell(snakeCoords[i]);
+        }
         let currDirection: Direction | undefined = Direction.Right;
 
         // Sets the current direction when an arrow key is pressed down.
@@ -213,11 +239,26 @@ export default function GameBoard() {
 
         // Movement interval
         let interval = setInterval(() => {
-            disableCell(head);
             head = move(head, currDirection);
-            if (head.row < ROWS && head.row >= 0 && head.col < COLS && head.col >= 0) {
+            const headRow = head[0];
+            const headCol = head[1];
+
+            // Check for intersection
+            if (board[headRow][headCol] === 1) {
+                console.log("Intersection");
+                clearInterval(interval);
+            }
+
+            snakeCoords.push(head);
+
+            // Manipulate tail after the move
+            if (snakeCoords.length > 1) disableCell(snakeCoords[0]);
+            board[snakeCoords[0][0]][snakeCoords[0][1]] = 0;
+            snakeCoords = snakeCoords.slice(1);
+
+            if (head[0] < ROWS && head[0] >= 0 && head[1] < COLS && head[1]>= 0) {
                 enableCell(head);
-                console.log(head);
+                board[headRow][headCol] = 1;
             }
             else {
                 console.log("Game over");
