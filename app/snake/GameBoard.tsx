@@ -43,30 +43,6 @@ export default function GameBoard() {
     function getCellIdFromCoordinates (location: Coordinate): number {
         return (location[0] * ROWS + location[1]);
     }
-
-    /**
-     * Sets the background of the cell with the given id to the on color.
-     * @param {Coordinate} location 
-     */
-    function enableCell(location: Coordinate): void {
-        const id = getCellIdFromCoordinates(location);
-        const cell = document.getElementById(`cell-${id}`);
-        if (cell) {
-            cell.style.backgroundColor = ON_COLOR;
-        }
-    }
-
-    /**
-     * Sets the background of the cell with the given id to the off color.
-     * @param {Coordinate} location  
-     */
-    function disableCell(location: Coordinate): void {
-        const id = getCellIdFromCoordinates(location);
-        const cell = document.getElementById(`cell-${id}`);
-        if (cell) {
-            cell.style.backgroundColor = OFF_COLOR;
-        }
-    }
     
     /**
      * Places food at a random location on the screen and returns the coordinate
@@ -188,7 +164,6 @@ export default function GameBoard() {
             }
             // Remove old tail after the move if no food was eaten
             else {
-                disableCell(snakeCoords[0]);
                 setCellValue(tail, 0);
                 snakeCoords = snakeCoords.slice(1);
             }
