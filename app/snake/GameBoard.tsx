@@ -14,7 +14,7 @@ export default function GameBoard() {
     const [gameOver, setGameOver] = useState(false);
     const [score, setScore] = useState<number>(0);
     const [board, setBoard] = useState<number[][]>([]);
-    const movementInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    // const movementInterval = useRef<ReturnType<typeof setInterval> | null>();
     const ROWS: number = 25;
     const COLS: number = 25;
     // TODO refactor the colors into an enum to make this cleaner
@@ -114,7 +114,15 @@ export default function GameBoard() {
     // TODO refactor this function so that it is only responsible for starting the game loop interval and 
     // setting up the initial game state. Control of the loop should be passed to the top level component function afterwards.
     function playGame() {
+        let cleanBoard = [...board];
+        for (let row = 0; row < ROWS; row++) {
+            for (let col = 0; col < COLS; col++) {
+                cleanBoard[row][col] = 0;
+            }
+        }
+        setBoard(cleanBoard);
         setScore(0);
+        setGameOver(false);
         const startRow = 0;
         const startCol = 0;
         setCellValue([startRow, startCol], 1);
@@ -142,6 +150,10 @@ export default function GameBoard() {
             }
         });
 
+        // Movement interval
+        // TODO move interval outside of this function to allow for control after the game starts
+        let interval = setInterval(move, 500);
+        
         // TODO move this outside of this function
         function move() {
             head = getNextLocation(head, currDirection);
@@ -149,9 +161,14 @@ export default function GameBoard() {
             const headCol = head[1];
             const tail: Coordinate = snakeCoords[0];
 
-            const intersected = board[headRow][headCol] === 1;
             const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
-            if (outOfBounds || intersected) {
+            if (outOfBounds) {
+                setGameOver(true);
+                clearInterval(interval);
+                return;
+            }
+            const intersected = board[headRow][headCol] === 1;
+            if (intersected) {
                 setGameOver(true);
                 clearInterval(interval);
                 return;
@@ -173,14 +190,12 @@ export default function GameBoard() {
             setCellValue(head, 1);
         }
 
-        // Movement interval
-        // TODO move interval outside of this function to allow for control after the game starts
-        let interval = setInterval(move, 500);
+        
     }
 
     return (
-        <section>
-            <h2 className="text-center">Score: {score}</h2>
+        <section className="flex flex-col gap-3">
+            <h2 className="text-center text-3xl">Score: {score}</h2>
             {/* <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
                 {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
                     <div
@@ -190,20 +205,28 @@ export default function GameBoard() {
                     />
                 )}
             </div> */}
-            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
-                {board.map((row: number[], i: number) => {
-                    return row.map((value: number, i: number) => 
-                        <div
-                            key={`pixel-${i}`}
-                            id={`cell-${i}`}
-                            className="w-full h-full"
-                            style={{backgroundColor: colors[value]}}
-                        >
-                        </div>
-                    )
-                })}
+            <div>
+                {gameOver && <div className="absolute min-w-game-width min-h-game-height">
+                    <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        Game Over
+                    </h2>
+                </div>}
+                <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
+                    
+                    {board.map((row: number[], i: number) => {
+                        return row.map((value: number, i: number) => 
+                            <div
+                                key={`pixel-${i}`}
+                                id={`cell-${i}`}
+                                className="w-full h-full"
+                                style={{backgroundColor: colors[value]}}
+                            >
+                            </div>
+                        )
+                    })}
+                </div>
             </div>
-            <div className="flex gap-4 items-center py-4">
+            <div className="flex gap-4 items-center">
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
                 <h3 className="font-semibold">Controls:</h3>
                 <button 
