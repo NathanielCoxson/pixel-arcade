@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function GameBoard() {
     enum Direction {
@@ -8,17 +8,16 @@ export default function GameBoard() {
         Down,
         Left,
         Right,
-    }
+    };
     type Coordinate = [number, number];
  
-    const [currentDirection, setCurrentDirection] = useState<Direction>(Direction.Right);
-    const [currentLocation, setCurrentLocation] = useState<Coordinate>([0, 0]);
-    const [snakeQueue, setSnakeQueue] = useState<Array<number>>([0]);
+    const [gameOver, setGameOver] = useState(false);
     const [score, setScore] = useState<number>(0);
-    const [testBoard, setTestBoard] = useState<number[][]>([]);
-    const movementInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [board, setBoard] = useState<number[][]>([]);
+    // const movementInterval = useRef<ReturnType<typeof setInterval> | null>();
     const ROWS: number = 25;
     const COLS: number = 25;
+    // TODO refactor the colors into an enum to make this cleaner
     const ON_COLOR: string = 'black';
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
     const FOOD_COLOR: string = 'green';
@@ -33,7 +32,7 @@ export default function GameBoard() {
             }
             arr.push(rowArr);
         }
-        setTestBoard(arr);
+        setBoard(arr);
     }, []);
 
     /**
@@ -44,30 +43,6 @@ export default function GameBoard() {
     function getCellIdFromCoordinates (location: Coordinate): number {
         return (location[0] * ROWS + location[1]);
     }
-
-    /**
-     * Sets the background of the cell with the given id to the on color.
-     * @param {Coordinate} location 
-     */
-    function enableCell(location: Coordinate): void {
-        const id = getCellIdFromCoordinates(location);
-        const cell = document.getElementById(`cell-${id}`);
-        if (cell) {
-            cell.style.backgroundColor = ON_COLOR;
-        }
-    }
-
-    /**
-     * Sets the background of the cell with the given id to the off color.
-     * @param {Coordinate} location  
-     */
-    function disableCell(location: Coordinate): void {
-        const id = getCellIdFromCoordinates(location);
-        const cell = document.getElementById(`cell-${id}`);
-        if (cell) {
-            cell.style.backgroundColor = OFF_COLOR;
-        }
-    }
     
     /**
      * Places food at a random location on the screen and returns the coordinate
@@ -77,9 +52,9 @@ export default function GameBoard() {
      */
     function placeFood(board: number[][]): Coordinate {
         const openCells: Coordinate[] = [];
-        for (let row = 0; row < testBoard.length; row++) {
-            for (let col = 0; col < testBoard[row].length; col++) {
-                if (testBoard[row][col] === 0) openCells.push([row, col]);
+        for (let row = 0; row < board.length; row++) {
+            for (let col = 0; col < board[row].length; col++) {
+                if (board[row][col] === 0) openCells.push([row, col]);
             }
         }
 
@@ -131,13 +106,23 @@ export default function GameBoard() {
      * @param {number} color 
      */
     function setCellValue(location: Coordinate, color: number): void {
-        let newBoard = [...testBoard];
+        let newBoard = [...board];
         newBoard[location[0]][location[1]] = color;
-        setTestBoard(newBoard);
+        setBoard(newBoard);
     }
 
+    // TODO refactor this function so that it is only responsible for starting the game loop interval and 
+    // setting up the initial game state. Control of the loop should be passed to the top level component function afterwards.
     function playGame() {
+        let cleanBoard = [...board];
+        for (let row = 0; row < ROWS; row++) {
+            for (let col = 0; col < COLS; col++) {
+                cleanBoard[row][col] = 0;
+            }
+        }
+        setBoard(cleanBoard);
         setScore(0);
+        setGameOver(false);
         const startRow = 0;
         const startCol = 0;
         setCellValue([startRow, startCol], 1);
@@ -146,7 +131,7 @@ export default function GameBoard() {
         let head: Coordinate = [startRow, startCol];
         let snakeCoords: Coordinate[] = [head];
 
-        placeFood(testBoard);
+        placeFood(board);
         // enableCell(head);
         let currDirection: Direction | undefined = Direction.Right;
 
@@ -165,33 +150,37 @@ export default function GameBoard() {
             }
         });
 
+        // Movement interval
+        // TODO move interval outside of this function to allow for control after the game starts
+        let interval = setInterval(move, 500);
+        
+        // TODO move this outside of this function
         function move() {
             head = getNextLocation(head, currDirection);
             const headRow = head[0];
             const headCol = head[1];
             const tail: Coordinate = snakeCoords[0];
 
-            // Out of bounds
-            if (headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS) {
-                console.log("Game over");
+            const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
+            if (outOfBounds) {
+                setGameOver(true);
                 clearInterval(interval);
                 return;
             }
-            // Intersection
-            if (testBoard[headRow][headCol] === 1) {
-                console.log("Game over");
+            const intersected = board[headRow][headCol] === 1;
+            if (intersected) {
+                setGameOver(true);
                 clearInterval(interval);
                 return;
             }
 
-            // Check if food was eaten
-            if (testBoard[headRow][headCol] === 2) {
-                placeFood(testBoard);
+            const eatFood = board[headRow][headCol] === 2
+            if (eatFood) {
+                placeFood(board);
                 setScore(prev => prev + 1);
             }
             // Remove old tail after the move if no food was eaten
             else {
-                disableCell(snakeCoords[0]);
                 setCellValue(tail, 0);
                 snakeCoords = snakeCoords.slice(1);
             }
@@ -201,13 +190,12 @@ export default function GameBoard() {
             setCellValue(head, 1);
         }
 
-        // Movement interval
-        let interval = setInterval(move, 500);
+        
     }
 
     return (
-        <section>
-            <h2 className="text-center">Score: {score}</h2>
+        <section className="flex flex-col gap-3">
+            <h2 className="text-center text-3xl">Score: {score}</h2>
             {/* <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
                 {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
                     <div
@@ -217,20 +205,28 @@ export default function GameBoard() {
                     />
                 )}
             </div> */}
-            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
-                {testBoard.map((row: number[], i: number) => {
-                    return row.map((value: number, i: number) => 
-                        <div
-                            key={`pixel-${i}`}
-                            id={`cell-${i}`}
-                            className="w-full h-full"
-                            style={{backgroundColor: colors[value]}}
-                        >
-                        </div>
-                    )
-                })}
+            <div>
+                {gameOver && <div className="absolute min-w-game-width min-h-game-height">
+                    <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        Game Over
+                    </h2>
+                </div>}
+                <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
+                    
+                    {board.map((row: number[], i: number) => {
+                        return row.map((value: number, i: number) => 
+                            <div
+                                key={`pixel-${i}`}
+                                id={`cell-${i}`}
+                                className="w-full h-full"
+                                style={{backgroundColor: colors[value]}}
+                            >
+                            </div>
+                        )
+                    })}
+                </div>
             </div>
-            <div className="flex gap-4 items-center py-4">
+            <div className="flex gap-4 items-center">
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
                 <h3 className="font-semibold">Controls:</h3>
                 <button 
