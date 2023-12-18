@@ -14,91 +14,27 @@ export default function GameBoard() {
     const [currentDirection, setCurrentDirection] = useState<Direction>(Direction.Right);
     const [currentLocation, setCurrentLocation] = useState<Coordinate>([0, 0]);
     const [snakeQueue, setSnakeQueue] = useState<Array<number>>([0]);
+    const [score, setScore] = useState<number>(0);
+    const [testBoard, setTestBoard] = useState<number[][]>([]);
     const movementInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const ROWS: number = 25;
     const COLS: number = 25;
     const ON_COLOR: string = 'black';
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
     const FOOD_COLOR: string = 'green';
+    const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
 
-    /**
-     * Performs a direction change when the user presses down on one 
-     * of the arrow keys.
-     * @param event 
-     */
-    // const onArrowKeyDown = useCallback((event: any) => {
-    //     const key = event.key;
-
-    //     switch(key) {
-    //         case 'ArrowUp':
-    //             setCurrentDirection(Direction.Up);
-    //             break;
-    //         case 'ArrowDown':
-    //             setCurrentDirection(Direction.Down);
-    //             break;
-    //         case 'ArrowLeft':
-    //             setCurrentDirection(Direction.Left);
-    //             break;
-    //         case 'ArrowRight':
-    //             setCurrentDirection(Direction.Right);
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }, [Direction])
-
-    // const moveSnake = useCallback(() => {
-    //     switch (currentDirection) {
-    //         case Direction.Up:
-    //             if (currentLocation.row > 0) {
-    //                 setCurrentLocation((prev: Coordinate) => {
-    //                     return {
-    //                         ...prev,
-    //                         row: prev.row - 1,
-    //                     }
-    //                 });
-    //             }
-    //             break;
-    //         case Direction.Down:
-    //             if (currentLocation.row < ROWS - 1) {
-    //                 setCurrentLocation((prev: Coordinate) => {
-    //                     return {
-    //                         ...prev,
-    //                         row: prev.row + 1,
-    //                     }
-    //                 });
-    //             }
-    //             break;
-    //         case Direction.Left:
-    //             if (currentLocation.col > 0) {
-    //                 setCurrentLocation((prev: Coordinate) => {
-    //                     return {
-    //                         ...prev,
-    //                         col: prev.col - 1,
-    //                     }
-    //                 });
-    //             }
-    //             break;
-    //         case Direction.Right:
-    //             if (currentLocation.col < COLS - 1) {
-    //                 let tail = document.getElementById(`cell-${snakeQueue[0]}`);
-    //                 if (tail) tail.style.backgroundColor = 'white';
-    //                 setCurrentLocation((prev: Coordinate) => {
-    //                     return {
-    //                         ...prev,
-    //                         col: prev.col + 1,
-    //                     }
-    //                 });
-    //             }
-    //             else {
-    //                 console.log("Game over");
-                    
-    //             }
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }, [Direction, currentDirection, currentLocation])
+    useEffect(() => {
+        let arr = [];
+        for (let row = 0; row < ROWS; row++) {
+            let rowArr = [];
+            for (let col = 0; col < COLS; col++) {
+                rowArr.push(0);
+            }
+            arr.push(rowArr);
+        }
+        setTestBoard(arr);
+    }, []);
 
     /**
      * Returns the number of the cell represented by the given coordinate row and column.
@@ -108,37 +44,6 @@ export default function GameBoard() {
     function getCellIdFromCoordinates (location: Coordinate): number {
         return (location[0] * ROWS + location[1]);
     }
-  
-    // useEffect(() => {
-    //     // Adds a keydown event listener to the document when the component mounts and
-    //     // removes it when the component unmounts. 
-    //     document.addEventListener('keydown', onArrowKeyDown);
-
-    //     // Sets the initial character position on the screen when the component mounts
-    //     let startingCell = document.getElementById(`cell-${getCellFromCoordinates({row: 0, col: 0})}`);
-    //     if (startingCell) startingCell.style.backgroundColor = 'black';
-
-    //     return () => {
-    //         document.removeEventListener('keydown', onArrowKeyDown);
-    //     }
-    // }, [onArrowKeyDown, getCellFromCoordinates, moveSnake])
-
-    // useEffect(() => {
-    //     // Set an interval to make the snake move.
-    //     movementInterval.current = setInterval(moveSnake, 500);
-    //     console.log('interval set')
-
-    //     return () => {
-    //         clearInterval(movementInterval.current as NodeJS.Timeout);
-    //     }
-    // }, [moveSnake])
-
-    // // Updates the cell corresponding to each location update.
-    // useEffect(() => {
-    //     console.log(currentLocation);
-    //     let cell = document.getElementById(`cell-${getCellFromCoordinates(currentLocation)}`);
-    //     if (cell) cell.style.backgroundColor = 'black';
-    // }, [currentLocation, getCellFromCoordinates])
 
     /**
      * Sets the background of the cell with the given id to the on color.
@@ -172,21 +77,26 @@ export default function GameBoard() {
      */
     function placeFood(board: number[][]): Coordinate {
         const openCells: Coordinate[] = [];
-        for (let row = 0; row < board.length; row++) {
-            for (let col = 0; col < board[row].length; col++) {
-                if (board[row][col] === 0) openCells.push([row, col]);
+        for (let row = 0; row < testBoard.length; row++) {
+            for (let col = 0; col < testBoard[row].length; col++) {
+                if (testBoard[row][col] === 0) openCells.push([row, col]);
             }
         }
 
         const foodCoordinate: Coordinate = openCells[Math.floor(Math.random() * openCells.length)];
-        board[foodCoordinate[0]][foodCoordinate[1]] = 2;
+        // setTestBoard(prev => {
+        //     prev[foodCoordinate[0]][foodCoordinate[1]] = 2;
+        //     return prev;
+        // });
+        setCellValue(foodCoordinate, 2);
+        // board[foodCoordinate[0]][foodCoordinate[1]] = 2;
         
         // Set cell to food color
-        const id = getCellIdFromCoordinates(foodCoordinate);
-        const cell = document.getElementById(`cell-${id}`);
-        if (cell) {
-            cell.style.backgroundColor = FOOD_COLOR;
-        }
+        // const id = getCellIdFromCoordinates(foodCoordinate);
+        // const cell = document.getElementById(`cell-${id}`);
+        // if (cell) {
+        //     cell.style.backgroundColor = FOOD_COLOR;
+        // }
 
         return foodCoordinate;
     }
@@ -198,8 +108,8 @@ export default function GameBoard() {
      * @param {Direction} direction 
      * @returns {Coordinate}
      */
-    function move(start: Coordinate, direction: Direction = Direction.Right): Coordinate {
-        let newLocation = {...start};
+    function getNextLocation(start: Coordinate, direction: Direction = Direction.Right): Coordinate {
+        let newLocation: Coordinate = [...start];
         if (direction == Direction.Up) {
             newLocation[0] -= 1;
         }
@@ -215,25 +125,29 @@ export default function GameBoard() {
         return newLocation;
     }
 
+    /**
+     * Sets the value of the given location in the board array to the given color value.
+     * @param {Coordinate} location 
+     * @param {number} color 
+     */
+    function setCellValue(location: Coordinate, color: number): void {
+        let newBoard = [...testBoard];
+        newBoard[location[0]][location[1]] = color;
+        setTestBoard(newBoard);
+    }
+
     function playGame() {
+        setScore(0);
         const startRow = 0;
         const startCol = 0;
+        setCellValue([startRow, startCol], 1);
+
         // Snake properties
         let head: Coordinate = [startRow, startCol];
         let snakeCoords: Coordinate[] = [head];
 
-        // Board
-        const board: number[][] = [];
-        for (let i = 0; i < ROWS; i++) {
-            board.push(new Array());
-            for (let j = 0; j < COLS; j++) {
-                board[i].push(0);
-            }
-        }
-        board[startRow][startCol] = 1;
-
-        placeFood(board);
-        enableCell(head);
+        placeFood(testBoard);
+        // enableCell(head);
         let currDirection: Direction | undefined = Direction.Right;
 
         // Sets the current direction when an arrow key is pressed down.
@@ -251,46 +165,50 @@ export default function GameBoard() {
             }
         });
 
-        // Movement interval
-        let interval = setInterval(() => {
-            head = move(head, currDirection);
+        function move() {
+            head = getNextLocation(head, currDirection);
             const headRow = head[0];
             const headCol = head[1];
+            const tail: Coordinate = snakeCoords[0];
 
-            // Check for intersection
-            if (board[headRow][headCol] === 1) {
+            // Out of bounds
+            if (headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS) {
                 console.log("Game over");
                 clearInterval(interval);
+                return;
+            }
+            // Intersection
+            if (testBoard[headRow][headCol] === 1) {
+                console.log("Game over");
+                clearInterval(interval);
+                return;
             }
 
-            snakeCoords.push(head);
-
+            // Check if food was eaten
+            if (testBoard[headRow][headCol] === 2) {
+                placeFood(testBoard);
+                setScore(prev => prev + 1);
+            }
             // Remove old tail after the move if no food was eaten
-            if (board[headRow][headCol] === 2) {
-                placeFood(board);
-            }
             else {
-                if (snakeCoords.length > 1) disableCell(snakeCoords[0]);
-                board[snakeCoords[0][0]][snakeCoords[0][1]] = 0;
+                disableCell(snakeCoords[0]);
+                setCellValue(tail, 0);
                 snakeCoords = snakeCoords.slice(1);
             }
             
-            if (head[0] < ROWS && head[0] >= 0 && head[1] < COLS && head[1]>= 0) {
-                enableCell(head);
-                board[headRow][headCol] = 1;
-            }
-            else {
-                console.log("Game over");
-                clearInterval(interval);
-            }
-        }, 500);
+            // Add new head coordinate
+            snakeCoords.push(head);
+            setCellValue(head, 1);
+        }
 
+        // Movement interval
+        let interval = setInterval(move, 500);
     }
-
 
     return (
         <section>
-            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
+            <h2 className="text-center">Score: {score}</h2>
+            {/* <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
                 {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
                     <div
                         key={`pixel-${i}`}
@@ -298,6 +216,19 @@ export default function GameBoard() {
                         className="w-full h-full"
                     />
                 )}
+            </div> */}
+            <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
+                {testBoard.map((row: number[], i: number) => {
+                    return row.map((value: number, i: number) => 
+                        <div
+                            key={`pixel-${i}`}
+                            id={`cell-${i}`}
+                            className="w-full h-full"
+                            style={{backgroundColor: colors[value]}}
+                        >
+                        </div>
+                    )
+                })}
             </div>
             <div className="flex gap-4 items-center py-4">
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
