@@ -19,6 +19,7 @@ export default function GameBoard() {
     const COLS: number = 25;
     const ON_COLOR: string = 'black';
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
+    const FOOD_COLOR: string = 'green';
 
     /**
      * Performs a direction change when the user presses down on one 
@@ -170,7 +171,24 @@ export default function GameBoard() {
      * @returns {Coordinate} The location of the food that was placed.
      */
     function placeFood(board: number[][]): Coordinate {
-        return [0, 0];
+        const openCells: Coordinate[] = [];
+        for (let row = 0; row < board.length; row++) {
+            for (let col = 0; col < board[row].length; col++) {
+                if (board[row][col] === 0) openCells.push([row, col]);
+            }
+        }
+
+        const foodCoordinate: Coordinate = openCells[Math.floor(Math.random() * openCells.length)];
+        board[foodCoordinate[0]][foodCoordinate[1]] = 2;
+        
+        // Set cell to food color
+        const id = getCellIdFromCoordinates(foodCoordinate);
+        const cell = document.getElementById(`cell-${id}`);
+        if (cell) {
+            cell.style.backgroundColor = FOOD_COLOR;
+        }
+
+        return foodCoordinate;
     }
 
     /**
@@ -198,9 +216,11 @@ export default function GameBoard() {
     }
 
     function playGame() {
+        const startRow = 0;
+        const startCol = 0;
         // Snake properties
-        let head: Coordinate = [0, 7];
-        let snakeCoords: Coordinate[] = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], head];
+        let head: Coordinate = [startRow, startCol];
+        let snakeCoords: Coordinate[] = [head];
 
         // Board
         const board: number[][] = [];
@@ -210,16 +230,10 @@ export default function GameBoard() {
                 board[i].push(0);
             }
         }
-        for (let pos of snakeCoords) {
-            board[pos[0]][pos[1]] = 1;
-        }
+        board[startRow][startCol] = 1;
 
-        console.log(board);
-
-        // Initialize beginning cell
-        for (let i = 0; i < snakeCoords.length; i++) {
-            enableCell(snakeCoords[i]);
-        }
+        placeFood(board);
+        enableCell(head);
         let currDirection: Direction | undefined = Direction.Right;
 
         // Sets the current direction when an arrow key is pressed down.
@@ -245,17 +259,22 @@ export default function GameBoard() {
 
             // Check for intersection
             if (board[headRow][headCol] === 1) {
-                console.log("Intersection");
+                console.log("Game over");
                 clearInterval(interval);
             }
 
             snakeCoords.push(head);
 
-            // Manipulate tail after the move
-            if (snakeCoords.length > 1) disableCell(snakeCoords[0]);
-            board[snakeCoords[0][0]][snakeCoords[0][1]] = 0;
-            snakeCoords = snakeCoords.slice(1);
-
+            // Remove old tail after the move if no food was eaten
+            if (board[headRow][headCol] === 2) {
+                placeFood(board);
+            }
+            else {
+                if (snakeCoords.length > 1) disableCell(snakeCoords[0]);
+                board[snakeCoords[0][0]][snakeCoords[0][1]] = 0;
+                snakeCoords = snakeCoords.slice(1);
+            }
+            
             if (head[0] < ROWS && head[0] >= 0 && head[1] < COLS && head[1]>= 0) {
                 enableCell(head);
                 board[headRow][headCol] = 1;
