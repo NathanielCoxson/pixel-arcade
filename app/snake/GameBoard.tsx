@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 export default function GameBoard() {
     enum Direction {
@@ -10,18 +10,22 @@ export default function GameBoard() {
         Right,
     };
     type Coordinate = [number, number];
- 
-    const [gameOver, setGameOver] = useState(false);
-    const [score, setScore] = useState<number>(0);
-    const [board, setBoard] = useState<number[][]>([]);
-    // const movementInterval = useRef<ReturnType<typeof setInterval> | null>();
-    const ROWS: number = 25;
-    const COLS: number = 25;
+
+    const ROWS: number = 10;
+    const COLS: number = 10;
     // TODO refactor the colors into an enum to make this cleaner
     const ON_COLOR: string = 'black';
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
     const FOOD_COLOR: string = 'green';
     const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
+ 
+    const [gameOver, setGameOver] = useState(false);
+    const [score, setScore] = useState<number>(0);
+    const [board, setBoard] = useState<number[][]>([]);
+    const interval = useRef<ReturnType<typeof setInterval>>();
+    let head: Coordinate = [0, 0];
+    let snakeCoords: Coordinate[] = [];
+    let currDirection: Direction | undefined = Direction.Right;
 
     useEffect(() => {
         let arr = [];
@@ -59,19 +63,7 @@ export default function GameBoard() {
         }
 
         const foodCoordinate: Coordinate = openCells[Math.floor(Math.random() * openCells.length)];
-        // setTestBoard(prev => {
-        //     prev[foodCoordinate[0]][foodCoordinate[1]] = 2;
-        //     return prev;
-        // });
         setCellValue(foodCoordinate, 2);
-        // board[foodCoordinate[0]][foodCoordinate[1]] = 2;
-        
-        // Set cell to food color
-        // const id = getCellIdFromCoordinates(foodCoordinate);
-        // const cell = document.getElementById(`cell-${id}`);
-        // if (cell) {
-        //     cell.style.backgroundColor = FOOD_COLOR;
-        // }
 
         return foodCoordinate;
     }
@@ -111,8 +103,73 @@ export default function GameBoard() {
         setBoard(newBoard);
     }
 
-    // TODO refactor this function so that it is only responsible for starting the game loop interval and 
-    // setting up the initial game state. Control of the loop should be passed to the top level component function afterwards.
+    /**
+     * Performs cleanup once the game ends like clearing the movement 
+     * interval and removing event listeners.
+     */
+    function endGame(): void {
+        setGameOver(true);
+        clearInterval(interval.current);
+        document.removeEventListener('keydown', arrowKeyDownListener);
+    }
+
+    /**
+     * Performs a single movement of the snake. 
+     * @returns void
+     */
+    function move(): void {
+        console.log('move');
+        head = getNextLocation(head, currDirection);
+        const headRow = head[0];
+        const headCol = head[1];
+        const tail: Coordinate = snakeCoords[0];
+
+        const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
+        if (outOfBounds) {
+            endGame();
+            return;
+        }
+        const intersected = board[headRow][headCol] === 1;
+        if (intersected) {
+            endGame();
+            return;
+        }
+
+        const eatFood = board[headRow][headCol] === 2
+        if (eatFood) {
+            placeFood(board);
+            setScore(prev => prev + 1);
+        }
+        // Remove old tail after the move if no food was eaten
+        else {
+            setCellValue(tail, 0);
+            snakeCoords = snakeCoords.slice(1);
+        }
+        
+        // Add new head coordinate
+        snakeCoords.push(head);
+        setCellValue(head, 1);
+    }
+
+    /**
+     * Listens for arrow key down events and updates the 
+     * current direction based on which key is pressed down.
+     * @param event 
+     */
+    function arrowKeyDownListener(event: any) {
+        const key: String = event.key;
+        const arrowKeys: Map<String, Direction> = new Map([
+            ["ArrowUp", Direction.Up],
+            ["ArrowDown", Direction.Down],
+            ["ArrowLeft", Direction.Left],
+            ["ArrowRight", Direction.Right],
+        ]);
+
+        if (arrowKeys.has(key)) {
+            currDirection = arrowKeys.get(key);
+        }
+    }
+
     function playGame() {
         let cleanBoard = [...board];
         for (let row = 0; row < ROWS; row++) {
@@ -120,78 +177,32 @@ export default function GameBoard() {
                 cleanBoard[row][col] = 0;
             }
         }
+        clearInterval(interval.current);
+        document.removeEventListener('keydown', arrowKeyDownListener);
         setBoard(cleanBoard);
         setScore(0);
         setGameOver(false);
         const startRow = 0;
         const startCol = 0;
-        setCellValue([startRow, startCol], 1);
 
         // Snake properties
-        let head: Coordinate = [startRow, startCol];
-        let snakeCoords: Coordinate[] = [head];
+        head = [startRow, startCol];
+        setCellValue(head, 1);
+        snakeCoords = [head];
 
         placeFood(board);
-        // enableCell(head);
-        let currDirection: Direction | undefined = Direction.Right;
+        currDirection = Direction.Right;
 
         // Sets the current direction when an arrow key is pressed down.
-        document.addEventListener('keydown', (event) => {
-            const key: String = event.key;
-            const arrowKeys: Map<String, Direction> = new Map([
-                ["ArrowUp", Direction.Up],
-                ["ArrowDown", Direction.Down],
-                ["ArrowLeft", Direction.Left],
-                ["ArrowRight", Direction.Right],
-            ]);
+        document.addEventListener('keydown', arrowKeyDownListener);
 
-            if (arrowKeys.has(key)) {
-                currDirection = arrowKeys.get(key);
-            }
-        });
-
-        // Movement interval
-        // TODO move interval outside of this function to allow for control after the game starts
-        let interval = setInterval(move, 500);
-        
-        // TODO move this outside of this function
-        function move() {
-            head = getNextLocation(head, currDirection);
-            const headRow = head[0];
-            const headCol = head[1];
-            const tail: Coordinate = snakeCoords[0];
-
-            const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
-            if (outOfBounds) {
-                setGameOver(true);
-                clearInterval(interval);
-                return;
-            }
-            const intersected = board[headRow][headCol] === 1;
-            if (intersected) {
-                setGameOver(true);
-                clearInterval(interval);
-                return;
-            }
-
-            const eatFood = board[headRow][headCol] === 2
-            if (eatFood) {
-                placeFood(board);
-                setScore(prev => prev + 1);
-            }
-            // Remove old tail after the move if no food was eaten
-            else {
-                setCellValue(tail, 0);
-                snakeCoords = snakeCoords.slice(1);
-            }
-            
-            // Add new head coordinate
-            snakeCoords.push(head);
-            setCellValue(head, 1);
-        }
-
-        
+        interval.current = setInterval(move, 500);
     }
+
+    // Cleanup
+    useEffect(() => {
+        return () => clearInterval(interval.current)
+    }, []);
 
     return (
         <section className="flex flex-col gap-3">
@@ -211,7 +222,7 @@ export default function GameBoard() {
                         Game Over
                     </h2>
                 </div>}
-                <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
+                <div className="grid grid-rows-10 grid-cols-10 min-w-game-width min-h-game-height bg-slate-800">
                     
                     {board.map((row: number[], i: number) => {
                         return row.map((value: number, i: number) => 
