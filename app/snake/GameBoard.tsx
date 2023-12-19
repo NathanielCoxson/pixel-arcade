@@ -207,15 +207,6 @@ export default function GameBoard() {
     return (
         <section className="flex flex-col gap-3">
             <h2 className="text-center text-3xl">Score: {score}</h2>
-            {/* <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
-                {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
-                    <div
-                        key={`pixel-${i}`}
-                        id={`cell-${i}`}
-                        className="w-full h-full"
-                    />
-                )}
-            </div> */}
             <div>
                 {gameOver && <div className="absolute min-w-game-width min-h-game-height">
                     <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
