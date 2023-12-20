@@ -21,8 +21,11 @@ export default function GameBoard() {
     const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
  
     const [gameOver, setGameOver] = useState(false);
+    const [gamePaused, setGamePaused] = useState(false);
     const [displayedScore, setDisplayedScore] = useState<number>(0);
     const [board, setBoard] = useState<number[][]>([]);
+    const [prevSnakeCoords, setPrevSnakeCoords] = useState<Coordinate[]>([]);
+    const [prevDirection, setPrevDirection] = useState<Direction | undefined>(Direction.Right);
     const interval = useRef<ReturnType<typeof setInterval>>();
     let head: Coordinate = [0, 0];
     let snakeCoords: Coordinate[] = [];
@@ -103,8 +106,30 @@ export default function GameBoard() {
      */
     function endGame(): void {
         setGameOver(true);
+        setGamePaused(false);
         clearInterval(interval.current);
         document.removeEventListener('keydown', arrowKeyDownListener);
+    }
+
+    /**
+     * Pauses the game, saving the current state.
+     */
+    function pauseGame(): void {
+        setGamePaused(true);
+        clearInterval(interval.current);
+    }
+
+    /**
+     * Resumes the game after a pause using the existing state.
+     */
+    function resumeGame(): void {
+        snakeCoords = [...prevSnakeCoords];
+        head = snakeCoords[snakeCoords.length - 1];
+        currDirection = prevDirection;
+        score = displayedScore;
+        document.addEventListener('keydown', arrowKeyDownListener);
+        setGamePaused(false);
+        interval.current = setInterval(move, 500);
     }
 
     /**
@@ -112,7 +137,6 @@ export default function GameBoard() {
      * @returns void
      */
     function move(): void {
-        console.log('move');
         head = getNextLocation(head, currDirection);
         const headRow = head[0];
         const headCol = head[1];
@@ -126,7 +150,6 @@ export default function GameBoard() {
 
         const eatFood = board[headRow][headCol] === 2;
         if (eatFood) {
-            
             setDisplayedScore(prev => prev + 1);
             score += 1;
             if (score === MAX_SCORE) {
@@ -150,6 +173,7 @@ export default function GameBoard() {
         
         // Add new head coordinate
         snakeCoords.push(head);
+        setPrevSnakeCoords(snakeCoords);
         setCellValue(head, 1);
     }
 
@@ -169,6 +193,7 @@ export default function GameBoard() {
 
         if (arrowKeys.has(key)) {
             currDirection = arrowKeys.get(key);
+            setPrevDirection(currDirection);
         }
     }
 
@@ -184,6 +209,7 @@ export default function GameBoard() {
         setBoard(cleanBoard);
         setDisplayedScore(0);
         setGameOver(false);
+        setGamePaused(false);
         const startRow = 0;
         const startCol = 0;
 
@@ -210,6 +236,8 @@ export default function GameBoard() {
         <section className="flex flex-col gap-3">
             <h2 className="text-center text-3xl">Score: {displayedScore}</h2>
             <div>
+                {/* Notification Overlays */}
+                {/* Game Over */}
                 {gameOver && <div className="absolute min-w-game-width min-h-game-height">
                     {displayedScore < MAX_SCORE && <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
                         Game Over
@@ -218,6 +246,14 @@ export default function GameBoard() {
                         You Win!
                     </h2>}
                 </div>}
+                {/* Game Paused */}
+                {gamePaused && <div className="absolute min-w-game-width min-h-game-height">
+                    <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        Paused
+                    </h2>
+                </div>}
+
+                {/* Game Board */}
                 <div className="grid grid-rows-4 grid-cols-4 min-w-game-width min-h-game-height bg-slate-800">
                     
                     {board.map((row: number[], i: number) => {
@@ -233,6 +269,8 @@ export default function GameBoard() {
                     })}
                 </div>
             </div>
+
+            {/* Controls */}
             <div className="flex gap-4 items-center">
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
                 <h3 className="font-semibold">Controls:</h3>
@@ -242,11 +280,18 @@ export default function GameBoard() {
                 >
                     Play
                 </button>
-                <button 
+                {!gamePaused && <button 
                     className="border border-black p-1 hover:bg-green-400"
+                    onClick={pauseGame}
                 >
                     Pause
-                </button>
+                </button>}
+                {gamePaused && <button 
+                    className="border border-black p-1 hover:bg-green-400"
+                    onClick={resumeGame}
+                >
+                    Resume
+                </button>}
             </div>
         </section>
 
