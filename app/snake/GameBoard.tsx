@@ -11,8 +11,9 @@ export default function GameBoard() {
     };
     type Coordinate = [number, number];
 
-    const ROWS: number = 10;
-    const COLS: number = 10;
+    const ROWS: number = 4;
+    const COLS: number = 4;
+    const MAX_SCORE: number = ROWS * COLS - 1;
     // TODO refactor the colors into an enum to make this cleaner
     const ON_COLOR: string = 'black';
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
@@ -20,12 +21,13 @@ export default function GameBoard() {
     const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
  
     const [gameOver, setGameOver] = useState(false);
-    const [score, setScore] = useState<number>(0);
+    const [displayedScore, setDisplayedScore] = useState<number>(0);
     const [board, setBoard] = useState<number[][]>([]);
     const interval = useRef<ReturnType<typeof setInterval>>();
     let head: Coordinate = [0, 0];
     let snakeCoords: Coordinate[] = [];
     let currDirection: Direction | undefined = Direction.Right;
+    let score: number = 0;
 
     useEffect(() => {
         let arr = [];
@@ -39,14 +41,6 @@ export default function GameBoard() {
         setBoard(arr);
     }, []);
 
-    /**
-     * Returns the number of the cell represented by the given coordinate row and column.
-     * Example: {row: 1, col: 0} => ROWS * 1 + 0
-     * @param {Coordinate} location
-     */
-    function getCellIdFromCoordinates (location: Coordinate): number {
-        return (location[0] * ROWS + location[1]);
-    }
     
     /**
      * Places food at a random location on the screen and returns the coordinate
@@ -129,21 +123,29 @@ export default function GameBoard() {
             endGame();
             return;
         }
-        const intersected = board[headRow][headCol] === 1;
-        if (intersected) {
-            endGame();
-            return;
-        }
 
-        const eatFood = board[headRow][headCol] === 2
+        const eatFood = board[headRow][headCol] === 2;
         if (eatFood) {
-            placeFood(board);
-            setScore(prev => prev + 1);
+            
+            setDisplayedScore(prev => prev + 1);
+            score += 1;
+            if (score === MAX_SCORE) {
+                endGame();
+            }
+            else {
+                placeFood(board);
+            }
         }
         // Remove old tail after the move if no food was eaten
         else {
             setCellValue(tail, 0);
             snakeCoords = snakeCoords.slice(1);
+        }
+
+        const intersected = board[headRow][headCol] === 1;
+        if (intersected) {
+            endGame();
+            return;
         }
         
         // Add new head coordinate
@@ -180,7 +182,7 @@ export default function GameBoard() {
         clearInterval(interval.current);
         document.removeEventListener('keydown', arrowKeyDownListener);
         setBoard(cleanBoard);
-        setScore(0);
+        setDisplayedScore(0);
         setGameOver(false);
         const startRow = 0;
         const startCol = 0;
@@ -206,23 +208,17 @@ export default function GameBoard() {
 
     return (
         <section className="flex flex-col gap-3">
-            <h2 className="text-center text-3xl">Score: {score}</h2>
-            {/* <div className="grid grid-rows-25 grid-cols-25 min-w-game-width min-h-game-height bg-slate-800">
-                {[...Array(ROWS * COLS)].map((value: undefined, i: number) =>
-                    <div
-                        key={`pixel-${i}`}
-                        id={`cell-${i}`}
-                        className="w-full h-full"
-                    />
-                )}
-            </div> */}
+            <h2 className="text-center text-3xl">Score: {displayedScore}</h2>
             <div>
                 {gameOver && <div className="absolute min-w-game-width min-h-game-height">
-                    <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                    {displayedScore < MAX_SCORE && <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
                         Game Over
-                    </h2>
+                    </h2>}
+                    {displayedScore === MAX_SCORE && <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        You Win!
+                    </h2>}
                 </div>}
-                <div className="grid grid-rows-10 grid-cols-10 min-w-game-width min-h-game-height bg-slate-800">
+                <div className="grid grid-rows-4 grid-cols-4 min-w-game-width min-h-game-height bg-slate-800">
                     
                     {board.map((row: number[], i: number) => {
                         return row.map((value: number, i: number) => 
