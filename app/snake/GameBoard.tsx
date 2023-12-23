@@ -1,7 +1,5 @@
 'use client'
-
 import { useEffect, useState, useRef } from "react";
-
 export default function GameBoard() {
     enum Direction {
         Up,
@@ -19,6 +17,8 @@ export default function GameBoard() {
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
     const FOOD_COLOR: string = 'green';
     const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
+    const MIN_MOVEMENT_DELAY = 250;
+    const movementDelayStep = 100; 
  
     const [gameOver, setGameOver] = useState(false);
     const [gamePaused, setGamePaused] = useState(false);
@@ -26,11 +26,13 @@ export default function GameBoard() {
     const [board, setBoard] = useState<number[][]>([]);
     const [prevSnakeCoords, setPrevSnakeCoords] = useState<Coordinate[]>([]);
     const [prevDirection, setPrevDirection] = useState<Direction | undefined>(Direction.Right);
+    const [prevMovementDelay, setPrevMovementDelay] = useState<number>(500);
     const interval = useRef<ReturnType<typeof setInterval>>();
     let head: Coordinate = [0, 0];
     let snakeCoords: Coordinate[] = [];
     let currDirection: Direction | undefined = Direction.Right;
     let score: number = 0;
+    let movementDelay: number = 500;
 
     useEffect(() => {
         let arr = [];
@@ -127,6 +129,7 @@ export default function GameBoard() {
         head = snakeCoords[snakeCoords.length - 1];
         currDirection = prevDirection;
         score = displayedScore;
+        movementDelay = prevMovementDelay;
         document.addEventListener('keydown', arrowKeyDownListener);
         setGamePaused(false);
         interval.current = setInterval(move, 500);
@@ -141,7 +144,7 @@ export default function GameBoard() {
         const headRow = head[0];
         const headCol = head[1];
         const tail: Coordinate = snakeCoords[0];
-
+        console.log(movementDelay);
         const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
         if (outOfBounds) {
             endGame();
@@ -157,6 +160,12 @@ export default function GameBoard() {
             }
             else {
                 placeFood(board);
+                if (movementDelay - movementDelayStep >= MIN_MOVEMENT_DELAY) {
+                    clearInterval(interval.current);
+                    setPrevMovementDelay(prev => prev - movementDelayStep);
+                    movementDelay -= movementDelayStep;
+                    interval.current = setInterval(move, movementDelay);
+                }
             }
         }
         // Remove old tail after the move if no food was eaten
@@ -205,6 +214,8 @@ export default function GameBoard() {
             }
         }
         clearInterval(interval.current);
+        setPrevMovementDelay(500);
+        movementDelay = 500;
         document.removeEventListener('keydown', arrowKeyDownListener);
         setBoard(cleanBoard);
         setDisplayedScore(0);
@@ -224,7 +235,7 @@ export default function GameBoard() {
         // Sets the current direction when an arrow key is pressed down.
         document.addEventListener('keydown', arrowKeyDownListener);
 
-        interval.current = setInterval(move, 500);
+        interval.current = setInterval(move, movementDelay);
     }
 
     // Cleanup
