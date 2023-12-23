@@ -144,7 +144,6 @@ export default function GameBoard() {
         const headRow = head[0];
         const headCol = head[1];
         const tail: Coordinate = snakeCoords[0];
-        console.log(movementDelay);
         const outOfBounds = headRow < 0 || headRow >= ROWS || headCol < 0 || headCol >= COLS;
         if (outOfBounds) {
             endGame();
