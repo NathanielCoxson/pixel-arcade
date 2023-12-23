@@ -17,7 +17,8 @@ export default function GameBoard() {
     const OFF_COLOR: string = 'rgb(30 41 59 / var(--tw-bg-opacity))';
     const FOOD_COLOR: string = 'green';
     const colors = [OFF_COLOR, ON_COLOR, FOOD_COLOR];
-    const movementDelayStep = 10;
+    const MIN_MOVEMENT_DELAY = 250;
+    const movementDelayStep = 100; 
  
     const [gameOver, setGameOver] = useState(false);
     const [gamePaused, setGamePaused] = useState(false);
@@ -159,10 +160,12 @@ export default function GameBoard() {
             }
             else {
                 placeFood(board);
-                clearInterval(interval.current);
-                setPrevMovementDelay(prev => prev - movementDelayStep);
-                movementDelay -= movementDelayStep;
-                interval.current = setInterval(move, movementDelay);
+                if (movementDelay - movementDelayStep >= MIN_MOVEMENT_DELAY) {
+                    clearInterval(interval.current);
+                    setPrevMovementDelay(prev => prev - movementDelayStep);
+                    movementDelay -= movementDelayStep;
+                    interval.current = setInterval(move, movementDelay);
+                }
             }
         }
         // Remove old tail after the move if no food was eaten
