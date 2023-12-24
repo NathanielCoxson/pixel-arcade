@@ -10,13 +10,18 @@ export default function Home() {
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
         <Link 
-          href="/snake"
+          href="/games/snake"
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
         >
           <h2>Snake</h2>
         </Link>
         <a className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'>
-          <h2>Minesweeper</h2>
+          <Link 
+            href="/games/minesweeper"
+            className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
+          >
+            <h2>MineSweeper</h2>
+          </Link>
         </a>
         <a className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'>
           <h2>Tetris</h2>

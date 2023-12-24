@@ -1,4 +1,4 @@
-import GameBoard from "./GameBoard"
+import Game from "./Game"
 
 export default function Snake() {
     return (
@@ -7,7 +7,7 @@ export default function Snake() {
                 <h1 className='text-5xl font-bold'>Snake</h1>
             </div>
 
-            <GameBoard />
+            <Game />
         </main>
     )
 }

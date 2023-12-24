@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from "react";
-export default function GameBoard() {
+
+export default function Game() {
     enum Direction {
         Up,
         Down,
