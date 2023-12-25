@@ -9,11 +9,12 @@ export default function Game() {
     const [board, setBoard] = useState<number[][]>([[]]);
 
     /**
-     * Randomly shuffles the given array
+     * Returns an array which contains the numbers
+     * of the given array but shuffled.
      * @param {number[]} arr 
      * @returns {number[]}
      */
-    function shuffleArray(arr: number[]): number[] {
+    function getShuffledArray(arr: number[]): number[] {
         for (let i = arr.length - 1; i > 0; i--) {
             const randomIndex = Math.floor(Math.random() * i);
             [arr[i], arr[randomIndex]] = [arr[randomIndex], arr[i]];
@@ -21,6 +22,8 @@ export default function Game() {
         return arr;
     }
 
+    // TODO make this not a callback after the playGame function is created, since this will no longer
+    // be called inside of a useEffect
     /**
      * Places mines randomly within the board matrix
      */
@@ -28,7 +31,7 @@ export default function Game() {
         let newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         const totalPixels = ROWS * COLS;
         const positions = Array.from({ length: totalPixels }, (_, index) => index);
-        const minePositions = shuffleArray(positions).slice(0, NUM_MINES);
+        const minePositions = getShuffledArray(positions).slice(0, NUM_MINES);
 
         for (let pos of minePositions) {
             const row = Math.floor(pos / COLS);
