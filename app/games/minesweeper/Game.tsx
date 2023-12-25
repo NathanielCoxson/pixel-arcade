@@ -1,29 +1,61 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function Game() {
     const ROWS = 10;
     const COLS = 10;
+    const NUM_MINES = 25;
     const [board, setBoard] = useState<number[][]>([[]]);
 
-    useEffect(() => {
-        let arr = [];
-        for (let i = 0; i < ROWS; i++) {
-            let column = [];
-            for (let j = 0; j < COLS; j++) {
-                column.push(0);
-            }
-            arr.push(column);
+    /**
+     * Randomly shuffles the given array
+     * @param {number[]} arr 
+     * @returns {number[]}
+     */
+    function shuffleArray(arr: number[]): number[] {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const randomIndex = Math.floor(Math.random() * i);
+            [arr[i], arr[randomIndex]] = [arr[randomIndex], arr[i]];
         }
-        setBoard(arr);
-        console.log(arr);
+        return arr;
+    }
+
+    /**
+     * Places mines randomly within the board matrix
+     */
+    const placeMines = useCallback(() => {
+        let newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        const totalPixels = ROWS * COLS;
+        const positions = Array.from({ length: totalPixels }, (_, index) => index);
+        const minePositions = shuffleArray(positions).slice(0, NUM_MINES);
+
+        for (let pos of minePositions) {
+            const row = Math.floor(pos / COLS);
+            const col = pos % COLS;
+            newBoard[row][col] = -1; 
+        }
+        setBoard(newBoard);
     }, []);
 
+    // Place mines when the game is opened
+    // TODO move this to a playGame function similar to snake where mines are placed each time the play button gets pressed
+    useEffect(() => {
+        placeMines();
+    }, [placeMines]);
+
+    /**
+     * Sets the background of a pixel to black when the mouse enters
+     * @param event 
+     */
     function onCellMouseOver(event: any) {
         event.target.style.backgroundColor = 'black';
     }
 
+    /**
+     * Sets the background of a pixel to the default color when the mouse exits
+     * @param event 
+     */
     function onCellMouseOut(event: any) {
         event.target.style.backgroundColor = "rgb(30 41 59 / var(--tw-bg-opacity))";
     } 
