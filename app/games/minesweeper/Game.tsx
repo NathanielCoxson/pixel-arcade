@@ -67,35 +67,30 @@ export default function Game() {
     }, [placeMines]);
 
     /**
-     * Sets the background of a pixel to black when the mouse enters
+     * Reveals a cell when the user clicks on it.
      * @param event 
      */
-    function onCellMouseOver(event: any) {
-        event.target.style.backgroundColor = 'black';
+    function revealCell(event: any) {
+        const cell = event.target;
+        const row = cell.id.split('-')[0];
+        const col = cell.id.split('-')[1];
+        cell.innerHTML = board[row][col];
+        cell.style.backgroundColor = "transparent";
     }
-
-    /**
-     * Sets the background of a pixel to the default color when the mouse exits
-     * @param event 
-     */
-    function onCellMouseOut(event: any) {
-        event.target.style.backgroundColor = "rgb(30 41 59 / var(--tw-bg-opacity))";
-    } 
 
     return (
         <section>
             <div>
                 {/* Game Board */}
-                <div className="grid grid-rows-10 grid-cols-10 min-w-game-width min-h-game-height bg-slate-800">
+                <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height bg-slate-800">
                     {board.map((row: number[], i: number) => {
                         return row.map((value: number, j: number) => {
                             return <div
                                 key={`${i}-${j}`}
-                                className="w-full h-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white"
-                                onMouseOver={onCellMouseOver}
-                                onMouseOut={onCellMouseOut}
+                                id={`${i}-${j}`}
+                                className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black"
+                                onClick={revealCell}
                             >
-                                {value}
                             </div>
                         })
                     })}
