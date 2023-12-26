@@ -38,6 +38,25 @@ export default function Game() {
             const col = pos % COLS;
             newBoard[row][col] = -1; 
         }
+
+        const directions = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+        for (let row = 0; row < newBoard.length; row++) {
+            for (let col = 0; col < newBoard[row].length; col++) {
+                if (newBoard[row][col] === -1) continue;
+                let count = 0;
+                for (let dir of directions) {
+                    const newRow = row + dir[0];
+                    const newCol = col + dir[1];
+                    if (
+                        0 <= newRow && newRow < ROWS &&
+                        0 <= newCol && newCol < COLS &&
+                        newBoard[newRow][newCol] === -1
+                    ) count++;
+                }
+                newBoard[row][col] = count;
+            }
+        }
+
         setBoard(newBoard);
     }, []);
 
