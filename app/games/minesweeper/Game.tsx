@@ -60,12 +60,6 @@ export default function Game() {
         setBoard(newBoard);
     }, []);
 
-    // Place mines when the game is opened
-    // TODO move this to a playGame function similar to snake where mines are placed each time the play button gets pressed
-    useEffect(() => {
-        placeMines();
-    }, [placeMines]);
-
     /**
      * Reveals a cell when the user clicks on it.
      * @param event 
@@ -78,8 +72,12 @@ export default function Game() {
         cell.style.backgroundColor = "transparent";
     }
 
+    function playGame() {
+        placeMines();
+    }
+
     return (
-        <section>
+        <section className="flex flex-col gap-3">
             <div>
                 {/* Game Board */}
                 <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height bg-slate-800">
@@ -95,6 +93,18 @@ export default function Game() {
                         })
                     })}
                 </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex gap-4 items-center">
+                {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
+                <h3 className="font-semibold">Controls:</h3>
+                <button
+                    className="border border-black p-1 hover:bg-green-400"
+                    onClick={playGame}
+                >
+                    Play
+                </button>
             </div>
         </section>
     )
