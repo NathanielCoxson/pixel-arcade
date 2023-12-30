@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 export default function Game() {
     const ROWS = 10;
     const COLS = 10;
     const NUM_MINES = 25;
     const [board, setBoard] = useState<number[][]>([[]]);
+    const [gameOver, setGameOver] = useState<boolean>(false);
 
     /**
      * Returns an array which contains the numbers
@@ -74,6 +75,7 @@ export default function Game() {
             q = q.slice(1);
             visited.push([row, col]);
             
+            // TODO remove diagonal direction checking which could solve issue #38 
             const directions: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
             for (let dir of directions) {
                 const newRow: number = Number(row) + Number(dir[0]);
@@ -110,6 +112,7 @@ export default function Game() {
         cell.style.cursor = "default";
 
         if (board[row][col] !== -1) autoClearCells([row, col]);
+        else setGameOver(true);
     }
 
     /**
@@ -117,12 +120,21 @@ export default function Game() {
      * it is at the start of a new game.
      */
     function playGame() {
+        setGameOver(false);
         placeMines();
     }
 
     return (
         <section className="flex flex-col gap-3">
             <div>
+                {/* Notification Overlays */}
+                {/* Game Over */}
+                {gameOver && <div className="absolute min-w-game-width min-h-game-height">
+                    {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        Game Over
+                    </h2>}
+                </div>}
+
                 {/* Game Board */}
                 <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height bg-slate-800">
                     {board.map((row: number[], i: number) => {
