@@ -61,17 +61,61 @@ export default function Game() {
     }, []);
 
     /**
+     * Automatically clears cells adjacent to the one at the given position where possible.
+     * @param {[number, number]} position 
+     */
+    function autoClearCells(position: [number, number]): void {
+        let q: [number, number][] = [];
+        let visited: [number, number][] = [];
+        q.push(position);
+
+        while (q.length > 0) {
+            const [row, col]: [number, number] = q[0]; 
+            q = q.slice(1);
+            visited.push([row, col]);
+            
+            const directions: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+            for (let dir of directions) {
+                const newRow: number = Number(row) + Number(dir[0]);
+                const newCol: number = Number(col) + Number(dir[1]);
+                const positionVisited = !!visited.find(([r, c]: [number, number]) => r === newRow && c === newCol);
+                if (
+                    newRow >= 0 && newRow < ROWS &&
+                    newCol >= 0 && newCol < COLS &&
+                    board[newRow][newCol] !== -1 &&
+                    !positionVisited
+                ) {
+                    // TODO consider refactoring this since it is a repeat from the clearCell function
+                    const cell = document.getElementById(`${newRow}-${newCol}`);
+                    if (cell) {
+                        cell.innerHTML = String(board[newRow][newCol]);
+                        cell.style.backgroundColor = "transparent";
+                        cell.style.cursor = "default";
+                    }
+                } 
+            }
+        }
+    }
+
+    /**
      * Reveals a cell when the user clicks on it.
      * @param event 
      */
-    function revealCell(event: any) {
+    function clearCell(event: any) {
         const cell = event.target;
         const row = cell.id.split('-')[0];
         const col = cell.id.split('-')[1];
         cell.innerHTML = board[row][col];
         cell.style.backgroundColor = "transparent";
+        cell.style.cursor = "default";
+
+        if (board[row][col] !== -1) autoClearCells([row, col]);
     }
 
+    /**
+     * Resets the state of the game including generating a new board so that
+     * it is at the start of a new game.
+     */
     function playGame() {
         placeMines();
     }
@@ -86,8 +130,8 @@ export default function Game() {
                             return <div
                                 key={`${i}-${j}`}
                                 id={`${i}-${j}`}
-                                className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black"
-                                onClick={revealCell}
+                                className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black select-none"
+                                onClick={clearCell}
                             >
                             </div>
                         })
