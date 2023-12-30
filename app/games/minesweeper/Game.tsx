@@ -109,9 +109,13 @@ export default function Game() {
         cell.style.backgroundColor = "transparent";
         cell.style.cursor = "default";
 
-        autoClearCells([row, col]);
+        if (board[row][col] !== -1) autoClearCells([row, col]);
     }
 
+    /**
+     * Resets the state of the game including generating a new board so that
+     * it is at the start of a new game.
+     */
     function playGame() {
         placeMines();
     }
