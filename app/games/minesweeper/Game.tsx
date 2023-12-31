@@ -132,6 +132,7 @@ export default function Game() {
                                 id={`${i}-${j}`}
                                 className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black select-none"
                                 onClick={clearCell}
+                                onContextMenu={(e) => e.preventDefault()}
                             >
                             </div>
                         })
