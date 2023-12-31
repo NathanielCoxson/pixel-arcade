@@ -113,6 +113,10 @@ export default function Game() {
         if (board[row][col] !== -1) autoClearCells([row, col]);
     }
 
+    /**
+     * Flags a cell as a mine when the user right clicks on it. 
+     * @param event 
+     */
     function flagCell(event: any) {
         event.preventDefault();
         const cell = event.target;
@@ -129,10 +133,6 @@ export default function Game() {
         }
         setFlags(newFlags);
     }
-
-    useEffect(() => {
-        console.log(flags);
-    }, [flags])
 
     /**
      * Resets the state of the game including generating a new board so that
