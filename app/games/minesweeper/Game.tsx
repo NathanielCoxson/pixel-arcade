@@ -7,6 +7,7 @@ export default function Game() {
     const COLS = 10;
     const NUM_MINES = 25;
     const [board, setBoard] = useState<number[][]>([[]]);
+    const [flags, setFlags] = useState<number[][]>([[]]);
 
     /**
      * Returns an array which contains the numbers
@@ -112,12 +113,34 @@ export default function Game() {
         if (board[row][col] !== -1) autoClearCells([row, col]);
     }
 
+    function flagCell(event: any) {
+        event.preventDefault();
+        const cell = event.target;
+        const row = cell.id.split('-')[0];
+        const col = cell.id.split('-')[1];
+        let newFlags = [...flags];
+        if (cell.style.backgroundColor === 'crimson') {
+            cell.style.backgroundColor = 'black';
+            newFlags[row][col] = 0;
+        }
+        else {
+            cell.style.backgroundColor = 'crimson';
+            newFlags[row][col] = 1;
+        }
+        setFlags(newFlags);
+    }
+
+    useEffect(() => {
+        console.log(flags);
+    }, [flags])
+
     /**
      * Resets the state of the game including generating a new board so that
      * it is at the start of a new game.
      */
     function playGame() {
         placeMines();
+        setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
     }
 
     return (
@@ -132,7 +155,7 @@ export default function Game() {
                                 id={`${i}-${j}`}
                                 className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black select-none"
                                 onClick={clearCell}
-                                onContextMenu={(e) => e.preventDefault()}
+                                onContextMenu={flagCell}
                             >
                             </div>
                         })
