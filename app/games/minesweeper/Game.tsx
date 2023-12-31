@@ -74,7 +74,7 @@ export default function Game() {
             q = q.slice(1);
             visited.push([row, col]);
             
-            const directions: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+            const directions: [number, number][] = [[-1, 0], [1, 0], [0, 1], [0, -1]];
             for (let dir of directions) {
                 const newRow: number = Number(row) + Number(dir[0]);
                 const newCol: number = Number(col) + Number(dir[1]);
@@ -109,6 +109,8 @@ export default function Game() {
         cell.style.backgroundColor = "transparent";
         cell.style.cursor = "default";
 
+        // TODO should only autoclear when the cell is a zero since you can automatically clear everything around it.
+        // For every other cell you need to check if enough mines have been flagged before trying to autoclear around it.
         if (board[row][col] !== -1) autoClearCells([row, col]);
     }
 
