@@ -15,17 +15,18 @@ export default function Home() {
         >
           <h2>Snake</h2>
         </Link>
-        <a className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'>
-          <Link 
-            href="/games/minesweeper"
-            className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
-          >
-            <h2>MineSweeper</h2>
-          </Link>
-        </a>
-        <a className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'>
+        <Link
+          href="/games/minesweeper"
+          className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
+        >
+          <h2>MineSweeper</h2>
+        </Link>
+        <Link
+          href="/games/tetris"
+          className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
+        >
           <h2>Tetris</h2>
-        </a>
+        </Link>
       </div>
     </main>
   )
