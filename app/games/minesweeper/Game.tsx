@@ -70,35 +70,49 @@ export default function Game() {
      */
     function autoClearCells(position: [number, number]): void {
         let q: [number, number][] = [];
-        let visited: [number, number][] = [];
+        let visited: [number, number][] = [...clearedCells];
         q.push(position);
 
         while (q.length > 0) {
             const [row, col]: [number, number] = q[0]; 
             q = q.slice(1);
-            visited.push([row, col]);
+            // TODO figure out why there is overlap when adding to visited list so this check doesn't always need to be done.
+            const inVisited = !!visited.find(([r, c]: [number, number]) => r === row && c === col);
+            if (!inVisited) visited.push([row, col]);
             
-            // TODO remove diagonal direction checking which could solve issue #38 
             const directions: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+            let numFlags = 0;
+            let numUncleared = 0;
             for (let dir of directions) {
                 const newRow: number = Number(row) + Number(dir[0]);
                 const newCol: number = Number(col) + Number(dir[1]);
-                const positionVisited = !!visited.find(([r, c]: [number, number]) => r === newRow && c === newCol);
-                if (
-                    newRow >= 0 && newRow < ROWS &&
-                    newCol >= 0 && newCol < COLS &&
-                    board[newRow][newCol] !== -1 &&
-                    !positionVisited
-                ) {
-                    // TODO consider refactoring this since it is a repeat from the clearCell function
-                    const cell = document.getElementById(`${newRow}-${newCol}`);
-                    if (cell) {
-                        cell.innerHTML = String(board[newRow][newCol]);
-                        cell.style.backgroundColor = "transparent";
-                        cell.style.cursor = "default";
+                if (0 <= newRow && newRow < ROWS && 0 <= newCol && newCol < COLS) {
+                    const cellCleared = !!clearedCells.find(([r, c]: [number, number]) => r === newRow && c === newCol);
+                    if (flags[newRow][newCol]) numFlags++;
+                    else if (!cellCleared) numUncleared++;
+                }
+            }
+            if (board[row][col] === 0 || board[row][col] - numFlags === 0) {
+                for (let dir of directions) {
+                    const newRow: number = Number(row) + Number(dir[0]);
+                    const newCol: number = Number(col) + Number(dir[1]);
+                    const positionVisited = !!visited.find(([r, c]: [number, number]) => r === newRow && c === newCol);
+                    if (
+                        newRow >= 0 && newRow < ROWS &&
+                        newCol >= 0 && newCol < COLS &&
+                        !positionVisited &&
+                        !flags[newRow][newCol]
+                    ) {
+                        const cell = document.getElementById(`${newRow}-${newCol}`);
+                        if (cell) {
+                            cell.innerHTML = String(board[newRow][newCol]);
+                            cell.style.backgroundColor = "transparent";
+                            cell.style.cursor = "default";
+                        }
+                        if (board[newRow][newCol] === -1) setGameOver(true);
+                        q.push([newRow, newCol]);
                     }
-                    visited.push([newRow, newCol]);
-                } 
+                }
             }
         }
 
