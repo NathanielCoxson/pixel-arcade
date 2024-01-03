@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export default function Game() {
     const ROWS = 10;
     const COLS = 10;
     const NUM_MINES = 25;
     const [board, setBoard] = useState<number[][]>([[]]);
+    const [gameOver, setGameOver] = useState<boolean>(false);
+    const [gameWon, setGameWon] = useState<boolean>(false);
+    const [flags, setFlags] = useState<number[][]>([[]]);
+    const [clearedCells, setClearedCells] = useState<[number, number][]>([]);
 
     /**
      * Returns an array which contains the numbers
@@ -74,7 +78,8 @@ export default function Game() {
             q = q.slice(1);
             visited.push([row, col]);
             
-            const directions: [number, number][] = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+            // TODO remove diagonal direction checking which could solve issue #38 
+            const directions: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
             for (let dir of directions) {
                 const newRow: number = Number(row) + Number(dir[0]);
                 const newCol: number = Number(col) + Number(dir[1]);
@@ -92,9 +97,17 @@ export default function Game() {
                         cell.style.backgroundColor = "transparent";
                         cell.style.cursor = "default";
                     }
+                    visited.push([newRow, newCol]);
                 } 
             }
         }
+
+        let newClearedCells = [...clearedCells];
+        for (let [row, col] of visited) {
+            const cleared = !!clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
+            if (!cleared) newClearedCells.push([row, col]);
+        }
+        setClearedCells(newClearedCells);
     }
 
     /**
@@ -103,15 +116,37 @@ export default function Game() {
      */
     function clearCell(event: any) {
         const cell = event.target;
-        const row = cell.id.split('-')[0];
-        const col = cell.id.split('-')[1];
+        const row: number = Number(cell.id.split('-')[0]);
+        const col: number = Number(cell.id.split('-')[1]);
         cell.innerHTML = board[row][col];
         cell.style.backgroundColor = "transparent";
         cell.style.cursor = "default";
+        const cellCleared = clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
+        const cellIsMine = board[row][col] === -1;
 
-        // TODO should only autoclear when the cell is a zero since you can automatically clear everything around it.
-        // For every other cell you need to check if enough mines have been flagged before trying to autoclear around it.
-        if (board[row][col] !== -1) autoClearCells([row, col]);
+        if (!cellIsMine) autoClearCells([row, col]);
+        else setGameOver(true);
+    }
+
+    /**
+     * Flags a cell as a mine when the user right clicks on it. 
+     * @param event 
+     */
+    function flagCell(event: any) {
+        event.preventDefault();
+        const cell = event.target;
+        const row = cell.id.split('-')[0];
+        const col = cell.id.split('-')[1];
+        let newFlags = [...flags];
+        if (cell.style.backgroundColor === 'crimson') {
+            cell.style.backgroundColor = 'black';
+            newFlags[row][col] = 0;
+        }
+        else {
+            cell.style.backgroundColor = 'crimson';
+            newFlags[row][col] = 1;
+        }
+        setFlags(newFlags);
     }
 
     /**
@@ -119,12 +154,35 @@ export default function Game() {
      * it is at the start of a new game.
      */
     function playGame() {
+        setGameOver(false);
+        setGameWon(false);
         placeMines();
+        setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
     }
+
+    // Check the win condition when a cell is cleared
+    useEffect(() => {
+        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) setGameWon(true);
+    }, [clearedCells]);
 
     return (
         <section className="flex flex-col gap-3">
+            <h2>{clearedCells.length}</h2>
             <div>
+                {/* Notification Overlays */}
+                {/* Game Won */}
+                {gameWon && <div className="absolute min-w-game-width min-h-game-height">
+                    {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        You Win!
+                    </h2>}
+                </div>}
+                {/* Game Over */}
+                {gameOver && <div className="absolute min-w-game-width min-h-game-height">
+                    {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white text-3xl">
+                        Game Over
+                    </h2>}
+                </div>}
+
                 {/* Game Board */}
                 <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height bg-slate-800">
                     {board.map((row: number[], i: number) => {
@@ -134,6 +192,7 @@ export default function Game() {
                                 id={`${i}-${j}`}
                                 className="max-h-full max-w-full flex flex-wrap border cursor-pointer border-slate-500 text-center justify-center content-center text-white bg-black select-none"
                                 onClick={clearCell}
+                                onContextMenu={flagCell}
                             >
                             </div>
                         })
