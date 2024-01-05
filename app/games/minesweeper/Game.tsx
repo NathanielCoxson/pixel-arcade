@@ -10,6 +10,7 @@ export default function Game() {
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameWon, setGameWon] = useState<boolean>(false);
     const [flags, setFlags] = useState<number[][]>([[]]);
+    const [numFlags, setNumFlags] = useState<number>(0);
     const [clearedCells, setClearedCells] = useState<[number, number][]>([]);
 
     /**
@@ -155,10 +156,12 @@ export default function Game() {
         if (cell.style.backgroundColor === 'crimson') {
             cell.style.backgroundColor = 'black';
             newFlags[row][col] = 0;
+            setNumFlags(prev => prev - 1);
         }
         else {
             cell.style.backgroundColor = 'crimson';
             newFlags[row][col] = 1;
+            setNumFlags(prev => prev + 1);
         }
         setFlags(newFlags);
     }
@@ -181,7 +184,10 @@ export default function Game() {
 
     return (
         <section className="flex flex-col gap-3">
-            <h2>{clearedCells.length}</h2>
+            <div className="flex gap-4">
+                <h2>Cleared: {clearedCells.length}</h2>
+                <h2>Mines: {NUM_MINES - numFlags}</h2>
+            </div>
             <div>
                 {/* Notification Overlays */}
                 {/* Game Won */}
