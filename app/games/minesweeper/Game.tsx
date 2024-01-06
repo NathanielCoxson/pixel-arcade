@@ -154,6 +154,11 @@ export default function Game() {
         const col = cell.id.split('-')[1];
         let newFlags = [...flags];
         if (cell.style.backgroundColor === 'crimson') {
+            cell.style.backgroundColor = 'gold';
+            newFlags[row][col] = 0;
+            setNumFlags(prev => prev - 1);
+        }
+        else if (cell.style.backgroundColor === 'gold') {
             cell.style.backgroundColor = 'black';
             newFlags[row][col] = 0;
             setNumFlags(prev => prev - 1);
