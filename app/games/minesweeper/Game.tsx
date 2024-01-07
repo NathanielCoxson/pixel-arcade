@@ -12,6 +12,19 @@ export default function Game() {
     const [flags, setFlags] = useState<number[][]>([[]]);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [clearedCells, setClearedCells] = useState<[number, number][]>([]);
+    const [seconds, setSeconds] = useState<number>(0);
+    const [gameRunning, setGameRunning] = useState<boolean>(false);
+
+    // Timer interval
+    useEffect(() => {
+        let timerInterval: ReturnType<typeof setInterval>;
+
+        if (gameRunning) {
+            timerInterval = setInterval(() => setSeconds(prev => prev + 1), 1000);
+        }
+
+        return () => clearInterval(timerInterval);
+    }, [gameRunning]);
 
     /**
      * Returns an array which contains the numbers
@@ -110,7 +123,10 @@ export default function Game() {
                             cell.style.backgroundColor = "transparent";
                             cell.style.cursor = "default";
                         }
-                        if (board[newRow][newCol] === -1) setGameOver(true);
+                        if (board[newRow][newCol] === -1) {
+                            setGameOver(true);
+                            setGameRunning(false);
+                        }
                         q.push([newRow, newCol]);
                     }
                 }
@@ -140,7 +156,10 @@ export default function Game() {
         const cellIsMine = board[row][col] === -1;
 
         if (!cellIsMine) autoClearCells([row, col]);
-        else setGameOver(true);
+        else {
+            setGameOver(true);
+            setGameRunning(false);
+        }
     }
 
     /**
@@ -178,13 +197,17 @@ export default function Game() {
     function playGame() {
         setGameOver(false);
         setGameWon(false);
+        setGameRunning(true);
         placeMines();
         setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
     }
 
     // Check the win condition when a cell is cleared
     useEffect(() => {
-        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) setGameWon(true);
+        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
+            setGameWon(true);
+            setGameRunning(false);
+        }
     }, [clearedCells]);
 
     return (
@@ -192,6 +215,7 @@ export default function Game() {
             <div className="flex gap-4">
                 <h2>Cleared: {clearedCells.length}</h2>
                 <h2>Mines: {NUM_MINES - numFlags}</h2>
+                <h2>Time: {Math.floor((seconds / (60 * 60)) % 24)}:{Math.floor((seconds / 60) % 60)}:{seconds % 60}</h2> 
             </div>
             <div>
                 {/* Notification Overlays */}
