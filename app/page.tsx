@@ -27,6 +27,12 @@ export default function Home() {
         >
           <h2>Tetris</h2>
         </Link>
+        <Link
+          href="/login"
+          
+        >
+          Login
+        </Link>
       </div>
     </main>
   )
