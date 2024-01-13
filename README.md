@@ -26,6 +26,23 @@ docker build -t nextjs-docker .
 docker run -p 3000:3000 nextjs-docker
 ```
 
+## Prisma development setup
+With a PostgreSQL database setup, run the following to install and/or setup Prisma
+
+To install:
+```
+npm install prisma @prisma/client
+
+npx prisma init
+```
+Setup: 
+
+- Add url in .env with this format: postgres://{username}:{password}@{hostname}:{port}/{database-name}
+- ```npx prisma db pull``` to pull schema from database at url
+- ```npx prisma generate``` to generate Prisma client from schema
+- More info: https://vercel.com/guides/nextjs-prisma-postgres
+
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
