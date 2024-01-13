@@ -1,49 +1,47 @@
-'use client'
+'use client';
+import { createUser } from "@/src/lib/actions"
+import { useFormState } from "react-dom"
 
-import { useState } from "react";
+const initialState = {
+    username: '',
+    password: '',
+    retypedPassword: '',
+    message: '',
+};
 
 export default function Signup() {
-    const [username, setUsername] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [retypedPassword, setRetypedPassword] = useState<string>('');
-
-    function handleSubmit(event: any) {
-        console.log({username, password, retypedPassword});
-    }
+    const [state, formAction] = useFormState(createUser, initialState);
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center p-24 gap-2">
             <h1 className="text-4xl font-bold">Signup</h1>
-            <div className="flex flex-col gap-1">
-                <div className="flex w-full justify-between gap-2">
-                    <label htmlFor="username">Username:</label>
-                    <input
-                        name="username"
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    ></input>
+            <form action={formAction}>
+                <div className="flex flex-col gap-1">
+                    <div className="flex w-full justify-between gap-2">
+                        <label htmlFor="username">Username:</label>
+                        <input
+                            name="username"
+                            type="text"
+                        ></input>
+                    </div>
+                    <div className="flex min-w-full justify-between gap-2">
+                        <label htmlFor="password">Password:</label>
+                        <input
+                            name="password"
+                            type="password"
+                        ></input>
+                    </div>
+                    <div className="flex min-w-full justify-between gap-2">
+                        <label htmlFor="retypedPassword">Retype Password:</label>
+                        <input
+                            name="retypedPassword"
+                            type="password"
+                        ></input>
+                    </div>
+                    <p>{state?.message}</p>
+                    <button type='submit'>Submit</button>
                 </div>
-                <div className="flex min-w-full justify-between gap-2">
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        name="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    ></input>
-                </div>
-                <div className="flex min-w-full justify-between gap-2">
-                    <label htmlFor="retypedPassword">Retype Password:</label>
-                    <input
-                        name="retypedPassword"
-                        type="password"
-                        value={retypedPassword}
-                        onChange={(e) => setRetypedPassword(e.target.value)}
-                    ></input>
-                </div>
-                <button onClick={handleSubmit}>Submit</button>
-            </div>
+            </form>
         </main>
     )
 }
