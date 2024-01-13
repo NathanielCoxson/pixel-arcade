@@ -8,7 +8,7 @@ datasource db {
 }
 
 model users {
-  id       String @id @db.Uuid
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username String @db.VarChar
   password String @db.VarChar
 }
