@@ -22,6 +22,13 @@ export async function createUser(prevState: any, formData: FormData) {
         retypedPassword: formData.get('retypedPassword'),
     });
 
+    if (password !== retypedPassword) {
+        return {
+            ...prevState,
+            message: 'Passwords do not match'
+        }
+    }
+
     // Insert into DB
     const hashedPassword = await bcrypt.hash(password, saltRounds);  
     const user = await prisma.users.create({
