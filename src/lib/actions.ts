@@ -14,6 +14,7 @@ const CreateNewUser = NewUserFormSchema.omit({ message: true });
 
 export async function createUser(prevState: any, formData: FormData) {
     const saltRounds = 12;
+    const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 
     // Extract form data
     const { username, password, retypedPassword } = CreateNewUser.parse({
@@ -22,10 +23,25 @@ export async function createUser(prevState: any, formData: FormData) {
         retypedPassword: formData.get('retypedPassword'),
     });
 
+    const userByUsername = await prisma.users.findFirst({
+        where: { username },
+    });
+    if (userByUsername) {
+        return {
+            ...prevState,
+            message: 'That username is taken'
+        }
+    }
     if (password !== retypedPassword) {
         return {
             ...prevState,
-            message: 'Passwords do not match'
+            message: 'Passwords do not match',
+        }
+    }
+    if (!passwordRegex.test(password)) {
+        return {
+            ...prevState,
+            message: 'Password too weak',
         }
     }
 
@@ -38,7 +54,7 @@ export async function createUser(prevState: any, formData: FormData) {
         },
     });
 
-    console.log(user);
+    console.log('Created user:\n', user);
     return {
         ...prevState,
         message: 'Success!'
