@@ -1,19 +1,32 @@
 'use server';
 import prisma from "./prisma";
+import { z } from 'zod';
 const bcrypt = require('bcrypt');
+
+const NewUserFormSchema = z.object({
+    username: z.string(),
+    password: z.string(),
+    retypedPassword: z.string(),
+    message: z.string(),
+});
+
+const CreateNewUser = NewUserFormSchema.omit({ message: true });
 
 export async function createUser(prevState: any, formData: FormData) {
     const saltRounds = 12;
-    const rawData = {
-        username: String(formData.get('username')),
-        password: String(formData.get('password')),
-    }
 
-    const hashedPassword = await bcrypt.hash(rawData.password, saltRounds);  
+    // Extract form data
+    const { username, password, retypedPassword } = CreateNewUser.parse({
+        username: formData.get('username'),
+        password: formData.get('password'),
+        retypedPassword: formData.get('retypedPassword'),
+    });
 
+    // Insert into DB
+    const hashedPassword = await bcrypt.hash(password, saltRounds);  
     const user = await prisma.users.create({
         data: {
-            username: rawData.username,
+            username: username,
             password: hashedPassword,
         },
     });
