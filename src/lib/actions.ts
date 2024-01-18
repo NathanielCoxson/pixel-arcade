@@ -1,7 +1,9 @@
 'use server';
 import prisma from "./prisma";
 import { z } from 'zod';
-const bcrypt = require('bcrypt');
+import { signIn } from "@/auth";
+import { AuthError } from "next-auth";
+import bcrypt from "bcrypt";
 
 const NewUserFormSchema = z.object({
     username: z.string(),
@@ -60,3 +62,22 @@ export async function createUser(prevState: any, formData: FormData) {
         message: 'Success!'
     };
 }
+
+export async function authenticate(
+    prevState: string | undefined,
+    formData: FormData,
+  ) {
+    try {
+      await signIn('credentials', {username: formData.get('username'), password: formData.get('password')});
+    } catch (error) {
+      if (error instanceof AuthError) {
+        switch (error.type) {
+          case 'CredentialsSignin':
+            return 'Invalid credentials.';
+          default:
+            return 'Something went wrong.';
+        }
+      }
+      throw error;
+    }
+  }
