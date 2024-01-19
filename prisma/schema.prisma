@@ -8,7 +8,16 @@ datasource db {
 }
 
 model users {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username          String              @db.VarChar
+  password          String              @db.VarChar
+  minesweeperScores minesweeperScores[]
+}
+
+model minesweeperScores {
   id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username String @db.VarChar
-  password String @db.VarChar
+  uid      String @db.Uuid
+  time     Int
+  numMines Int
+  users    users  @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "minesweeperScores_users_fkey")
 }

@@ -81,3 +81,13 @@ export async function authenticate(
       throw error;
     }
   }
+
+  export async function getMinesweeperScores(uid: string | undefined) {
+    if (!uid) return [];
+    try {
+        const scores = await prisma.minesweeperScores.findMany({ where: { uid } });
+        return scores;
+    } catch (error) {
+        throw error;
+    }
+  }
