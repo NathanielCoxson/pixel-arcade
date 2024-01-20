@@ -4,6 +4,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 This is a web app that allows you to play many different games in your browser, inspired by classic arcade games.
 
+Live version can be found here: http://54.91.177.205:3000/
+
 ## Getting Started
 
 First, run the development server:
