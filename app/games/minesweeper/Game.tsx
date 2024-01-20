@@ -224,7 +224,8 @@ export default function Game() {
     }
 
     /**
-     * Sets the game to the over state based on whether or not the player won. 
+     * Sets the game to the correct state based on whether or not the player won. 
+     * Also saves the score if they won.
      * @param {boolean} won 
      */
     function endGame(won: boolean) {
