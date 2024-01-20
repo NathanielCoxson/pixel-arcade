@@ -287,14 +287,6 @@ export default function Game() {
                 >
                     Play
                 </button>
-                <button
-                    className="border border-black p-1 hover:bg-green-400"
-                    onClick={async () => {
-                        await createMinesweeperScore({uid: session?.user?.id, time: 1, numMines: NUM_MINES});
-                    }}
-                >
-                    Create Score
-                </button>
             </div>
         </section>
     )
