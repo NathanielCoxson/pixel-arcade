@@ -21,9 +21,9 @@ bun dev
 ## With Docker
 
 ```
-docker build -t nextjs-docker .
+docker build -t pixel-arcade-docker .
 
-docker run -p 3000:3000 nextjs-docker
+docker run -p 3000:3000 pixel-arcade-docker 
 ```
 
 ## Prisma development setup
