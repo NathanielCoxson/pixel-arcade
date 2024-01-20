@@ -93,6 +93,11 @@ export async function getMinesweeperScores(uid: string | undefined) {
     }
 }
 
-export async function createMinesweeperScore(score: MinesweeperScore) {
-
+export async function createMinesweeperScore(score: any) {
+    try {
+        const newScore = await prisma.minesweeperScores.create({ data: score });
+        console.log("Created new minesweeper score: ", newScore);
+    } catch(error) {
+        throw error;
+    }
 }
