@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useCallback, useEffect } from "react";
+import { createMinesweeperScore } from "@/src/lib/actions";
+import { useSession } from "next-auth/react";
 
 export default function Game() {
     const ROWS = 10;
     const COLS = 10;
     const NUM_MINES = 25;
+    const { data: session } = useSession();
     const [board, setBoard] = useState<number[][]>([[]]);
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameWon, setGameWon] = useState<boolean>(false);
@@ -138,6 +141,9 @@ export default function Game() {
             const cleared = !!clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
             if (!cleared) newClearedCells.push([row, col]);
         }
+        if (newClearedCells.length === (ROWS * COLS) - NUM_MINES) {
+            endGame(true);
+        }
         setClearedCells(newClearedCells);
     }
 
@@ -157,8 +163,11 @@ export default function Game() {
 
         if (!cellIsMine) autoClearCells([row, col]);
         else {
-            setGameOver(true);
-            setGameRunning(false);
+            endGame(false);
+        }
+
+        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
+            endGame(true);
         }
     }
 
@@ -191,6 +200,18 @@ export default function Game() {
     }
 
     /**
+     * Saves the current score to the database.
+     */
+    async function saveScore() {
+        const newScore = {
+            uid: session?.user?.id,
+            time: seconds,
+            numMines: NUM_MINES,
+        };
+        await createMinesweeperScore(newScore);
+    }
+
+    /**
      * Resets the state of the game including generating a new board so that
      * it is at the start of a new game.
      */
@@ -202,13 +223,20 @@ export default function Game() {
         setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
     }
 
-    // Check the win condition when a cell is cleared
-    useEffect(() => {
-        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
+    /**
+     * Sets the game to the over state based on whether or not the player won. 
+     * @param {boolean} won 
+     */
+    function endGame(won: boolean) {
+        if (won) {
             setGameWon(true);
-            setGameRunning(false);
+            saveScore();
         }
-    }, [clearedCells]);
+        else {
+            setGameOver(true);
+        }
+        setGameRunning(false);
+    }
 
     return (
         <section className="flex flex-col gap-3">
@@ -258,6 +286,14 @@ export default function Game() {
                     onClick={playGame}
                 >
                     Play
+                </button>
+                <button
+                    className="border border-black p-1 hover:bg-green-400"
+                    onClick={async () => {
+                        await createMinesweeperScore({uid: session?.user?.id, time: 1, numMines: NUM_MINES});
+                    }}
+                >
+                    Create Score
                 </button>
             </div>
         </section>

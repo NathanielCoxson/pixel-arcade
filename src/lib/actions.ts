@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
+import { MinesweeperScore } from "@/app/types";
 
 const NewUserFormSchema = z.object({
     username: z.string(),
@@ -48,7 +49,7 @@ export async function createUser(prevState: any, formData: FormData) {
     }
 
     // Insert into DB
-    const hashedPassword = await bcrypt.hash(password, saltRounds);  
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const user = await prisma.users.create({
         data: {
             username: username,
@@ -66,18 +67,37 @@ export async function createUser(prevState: any, formData: FormData) {
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData,
-  ) {
+) {
     try {
-      await signIn('credentials', {username: formData.get('username'), password: formData.get('password')});
+        await signIn('credentials', { username: formData.get('username'), password: formData.get('password') });
     } catch (error) {
-      if (error instanceof AuthError) {
-        switch (error.type) {
-          case 'CredentialsSignin':
-            return 'Invalid credentials.';
-          default:
-            return 'Something went wrong.';
+        if (error instanceof AuthError) {
+            switch (error.type) {
+                case 'CredentialsSignin':
+                    return 'Invalid credentials.';
+                default:
+                    return 'Something went wrong.';
+            }
         }
-      }
-      throw error;
+        throw error;
     }
-  }
+}
+
+export async function getMinesweeperScores(uid: string | undefined) {
+    if (!uid) return [];
+    try {
+        const scores = await prisma.minesweeperScores.findMany({ where: { uid } });
+        return scores;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function createMinesweeperScore(score: any) {
+    try {
+        const newScore = await prisma.minesweeperScores.create({ data: score });
+        console.log("Created new minesweeper score: ", newScore);
+    } catch(error) {
+        throw error;
+    }
+}
