@@ -98,6 +98,17 @@ export async function createMinesweeperScore(score: any) {
         const newScore = await prisma.minesweeperScores.create({ data: score });
         console.log("Created new minesweeper score: ", newScore);
     } catch(error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export async function createSnakeScore(score: any) {
+    try {
+        const newScore = await prisma.snakeScores.create({ data: score });
+        console.log("Created new snake score: ", newScore);
+    } catch(error) {
+        console.log(error);
         throw error;
     }
 }

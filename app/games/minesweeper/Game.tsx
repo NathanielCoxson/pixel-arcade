@@ -224,7 +224,8 @@ export default function Game() {
     }
 
     /**
-     * Sets the game to the over state based on whether or not the player won. 
+     * Sets the game to the correct state based on whether or not the player won. 
+     * Also saves the score if they won.
      * @param {boolean} won 
      */
     function endGame(won: boolean) {
@@ -286,14 +287,6 @@ export default function Game() {
                     onClick={playGame}
                 >
                     Play
-                </button>
-                <button
-                    className="border border-black p-1 hover:bg-green-400"
-                    onClick={async () => {
-                        await createMinesweeperScore({uid: session?.user?.id, time: 1, numMines: NUM_MINES});
-                    }}
-                >
-                    Create Score
                 </button>
             </div>
         </section>
