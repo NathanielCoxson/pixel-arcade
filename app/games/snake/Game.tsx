@@ -1,5 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from "react";
+import { createSnakeScore } from "@/src/lib/actions";
+import { useSession } from "next-auth/react";
 
 export default function Game() {
     enum Direction {
@@ -21,6 +23,7 @@ export default function Game() {
     const MIN_MOVEMENT_DELAY = 250;
     const movementDelayStep = 100; 
  
+    const { data: session } = useSession();
     const [gameOver, setGameOver] = useState(false);
     const [gamePaused, setGamePaused] = useState(false);
     const [displayedScore, setDisplayedScore] = useState<number>(0);
@@ -105,13 +108,20 @@ export default function Game() {
 
     /**
      * Performs cleanup once the game ends like clearing the movement 
-     * interval and removing event listeners.
+     * interval, saving the score, and removing event listeners.
      */
-    function endGame(): void {
+    async function endGame() {
         setGameOver(true);
         setGamePaused(false);
         clearInterval(interval.current);
         document.removeEventListener('keydown', arrowKeyDownListener);
+        const newScore = {
+            uid: session?.user?.id,
+            score: score, 
+            numRows: ROWS,
+            numCols: COLS,
+        };
+        await createSnakeScore(newScore);
     }
 
     /**
