@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useFormState } from "react-dom";
 import { authenticate } from "@/src/lib/actions";
+import Link from "next/link";
 
 export default function Login() {
     const [errorMessage, dispatch] = useFormState(authenticate, undefined);
@@ -29,6 +30,10 @@ export default function Login() {
                     <button type='submit'>Submit</button>
                 </div>
             </form>
+            <div className="flex items-center gap-4">
+                <h2>Need an account?</h2>
+                <Link href="/signup">Sign Up</Link>
+            </div>
         </main>
     )
 }

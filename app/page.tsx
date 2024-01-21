@@ -1,7 +1,11 @@
 import { signOut } from "@/auth";
 import Link from "next/link"
+import { auth } from "@/auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  console.log(session);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-evenly p-24">
       
@@ -10,6 +14,14 @@ export default function Home() {
       </div>
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
+        <Link
+          href="/dashboard" 
+          className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
+        >
+          Your Dashboard
+        </Link>
+
+        {/* Game Links */}
         <Link 
           href="/games/snake"
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
@@ -28,18 +40,17 @@ export default function Home() {
         >
           <h2>Tetris</h2>
         </Link>
-        <Link
-          href="/login"
-          
-        >
-          Login
-        </Link>
-        <form action={async () => {
-          'use server';
-          await signOut();
-        }}>
-          <button type='submit'>Sign out</button>
-        </form>
+
+        {/* Login/Logout */}
+        {!session && <Link href="/login">Login</Link>}
+        {session && 
+          <form action={async () => {
+            'use server';
+            await signOut();
+          }}>
+            <button type='submit'>Sign out</button>
+          </form>
+        }
       </div>
     </main>
   )
