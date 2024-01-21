@@ -14,6 +14,14 @@ export default async function Home() {
       </div>
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
+        <Link
+          href="/dashboard" 
+          className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
+        >
+          Your Dashboard
+        </Link>
+
+        {/* Game Links */}
         <Link 
           href="/games/snake"
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
@@ -32,6 +40,8 @@ export default async function Home() {
         >
           <h2>Tetris</h2>
         </Link>
+
+        {/* Login/Logout */}
         {!session && <Link href="/login">Login</Link>}
         {session && 
           <form action={async () => {
