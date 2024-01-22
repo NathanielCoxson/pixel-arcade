@@ -14,12 +14,12 @@ export default async function Home() {
       </div>
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
-        <Link
+        {session && <Link
           href="/dashboard" 
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
         >
-          Your Dashboard
-        </Link>
+          Dashboard
+        </Link>}
 
         {/* Game Links */}
         <Link 
