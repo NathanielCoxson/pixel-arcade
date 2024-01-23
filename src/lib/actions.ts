@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
-import { MinesweeperScore } from "@/app/types";
+import { MinesweeperScore, SnakeScore } from "@/app/types";
 
 const NewUserFormSchema = z.object({
     username: z.string(),
@@ -89,6 +89,7 @@ export async function getMinesweeperScores(uid: string | undefined) {
         const scores = await prisma.minesweeperScores.findMany({ where: { uid } });
         return scores;
     } catch (error) {
+        console.log(error);
         throw error;
     }
 }
@@ -108,6 +109,22 @@ export async function createSnakeScore(score: any) {
         const newScore = await prisma.snakeScores.create({ data: score });
         console.log("Created new snake score: ", newScore);
     } catch(error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+/**
+ * Returns a list of the snake score objects for the user with the given uid. 
+ * @param {string} uid 
+ * @returns a list of scores 
+ */
+export async function getSnakeScores(uid: string | undefined) {
+    if (!uid) return [];
+    try {
+        const scores = await prisma.snakeScores.findMany({ where: { uid } });
+        return scores;
+    } catch (error) {
         console.log(error);
         throw error;
     }
