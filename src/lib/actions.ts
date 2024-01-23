@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
-import { MinesweeperScore, SnakeScore } from "@/app/types";
 
 const NewUserFormSchema = z.object({
     username: z.string(),
@@ -15,6 +14,12 @@ const NewUserFormSchema = z.object({
 
 const CreateNewUser = NewUserFormSchema.omit({ message: true });
 
+/**
+ * Server action that creates a new user in the database given a new user object. 
+ * @param prevState 
+ * @param formData 
+ * @returns 
+ */
 export async function createUser(prevState: any, formData: FormData) {
     const saltRounds = 12;
     const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
@@ -64,6 +69,13 @@ export async function createUser(prevState: any, formData: FormData) {
     };
 }
 
+/**
+ * Login server action that authenticates a user given their password and username
+ * as credentials. 
+ * @param prevState 
+ * @param formData 
+ * @returns 
+ */
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData,
@@ -83,6 +95,11 @@ export async function authenticate(
     }
 }
 
+/**
+ * Returns an array of minesweeper score objects for the user with the given uid. 
+ * @param {string} uid 
+ * @returns an array of minesweeper scores 
+ */
 export async function getMinesweeperScores(uid: string | undefined) {
     if (!uid) return [];
     try {
@@ -94,6 +111,10 @@ export async function getMinesweeperScores(uid: string | undefined) {
     }
 }
 
+/**
+ * Creates a new minesweeper score in the database.
+ * @param {MinesweeperScore} score 
+ */
 export async function createMinesweeperScore(score: any) {
     try {
         const newScore = await prisma.minesweeperScores.create({ data: score });
@@ -104,6 +125,10 @@ export async function createMinesweeperScore(score: any) {
     }
 }
 
+/**
+ * Creates a new snake score in the database. 
+ * @param {SnakeScore} score 
+ */
 export async function createSnakeScore(score: any) {
     try {
         const newScore = await prisma.snakeScores.create({ data: score });
