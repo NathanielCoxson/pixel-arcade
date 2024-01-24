@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 
 export default async function Home() {
   const session = await auth();
-  console.log(session);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-evenly p-24">
@@ -14,12 +13,12 @@ export default async function Home() {
       </div>
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
-        <Link
+        {session && <Link
           href="/dashboard" 
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
         >
-          Your Dashboard
-        </Link>
+          Dashboard
+        </Link>}
 
         {/* Game Links */}
         <Link 

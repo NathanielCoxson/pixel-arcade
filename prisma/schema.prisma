@@ -16,18 +16,20 @@ model users {
 }
 
 model minesweeperScores {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  uid      String @db.Uuid
-  time     Int
-  numMines Int
-  users    users  @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "minesweeperScores_users_fkey")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uid       String   @db.Uuid
+  time      Int
+  numMines  Int
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  users     users    @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "minesweeperScores_users_fkey")
 }
 
 model snakeScores {
-  id      String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  uid     String @db.Uuid
-  score   Int
-  numRows Int
-  numCols Int
-  users   users  @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "snakeScores_users_fkey")
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uid       String   @db.Uuid
+  score     Int
+  numRows   Int
+  numCols   Int
+  timestamp DateTime @default(now()) @db.Timestamptz(6)
+  users     users    @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "snakeScores_users_fkey")
 }
