@@ -178,8 +178,12 @@ export default function Game() {
     function flagCell(event: any) {
         event.preventDefault();
         const cell = event.target;
-        const row = cell.id.split('-')[0];
-        const col = cell.id.split('-')[1];
+        const row = Number(cell.id.split('-')[0]);
+        const col = Number(cell.id.split('-')[1]);
+
+        const cellCleared = clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
+        if (cellCleared) return;
+
         let newFlags = [...flags];
         if (cell.style.backgroundColor === 'crimson') {
             cell.style.backgroundColor = 'gold';
