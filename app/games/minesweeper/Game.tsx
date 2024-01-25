@@ -224,6 +224,7 @@ export default function Game() {
             time: seconds,
             numMines: NUM_MINES,
             win: win, 
+            numCleared: clearedCells.length,
         };
         await createMinesweeperScore(newScore);
     }
