@@ -22,7 +22,9 @@ model minesweeperScores {
   numMines   Int
   timestamp  DateTime @default(now()) @db.Timestamptz(6)
   win        Boolean
-  numCleared Int?
+  numCleared Int
+  numRows    Int
+  numCols    Int
   users      users    @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "minesweeperScores_users_fkey")
 }
 

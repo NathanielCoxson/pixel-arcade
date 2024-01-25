@@ -128,6 +128,8 @@ export default function Game() {
                         }
                         if (board[newRow][newCol] === -1) {
                             endGame(false);
+                            console.log('2');
+                            return;
                         }
                         q.push([newRow, newCol]);
                     }
@@ -163,6 +165,7 @@ export default function Game() {
         if (!cellIsMine) autoClearCells([row, col]);
         else {
             endGame(false);
+            console.log('1');
         }
 
         if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
@@ -225,6 +228,8 @@ export default function Game() {
             numMines: NUM_MINES,
             win: win, 
             numCleared: clearedCells.length,
+            numRows: ROWS,
+            numCols: COLS,
         };
         await createMinesweeperScore(newScore);
     }
@@ -235,6 +240,7 @@ export default function Game() {
      * @param {boolean} win 
      */
     function endGame(win: boolean) {
+        if (!gameRunning) return;
         if (win) {
             setGameWon(true);
         }
