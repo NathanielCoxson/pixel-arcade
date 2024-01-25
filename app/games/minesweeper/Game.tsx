@@ -127,8 +127,9 @@ export default function Game() {
                             cell.style.cursor = "default";
                         }
                         if (board[newRow][newCol] === -1) {
-                            setGameOver(true);
-                            setGameRunning(false);
+                            endGame(false);
+                            console.log('2');
+                            return;
                         }
                         q.push([newRow, newCol]);
                     }
@@ -164,6 +165,7 @@ export default function Game() {
         if (!cellIsMine) autoClearCells([row, col]);
         else {
             endGame(false);
+            console.log('1');
         }
 
         if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
@@ -204,18 +206,6 @@ export default function Game() {
     }
 
     /**
-     * Saves the current score to the database.
-     */
-    async function saveScore() {
-        const newScore = {
-            uid: session?.user?.id,
-            time: seconds,
-            numMines: NUM_MINES,
-        };
-        await createMinesweeperScore(newScore);
-    }
-
-    /**
      * Resets the state of the game including generating a new board so that
      * it is at the start of a new game.
      */
@@ -228,18 +218,36 @@ export default function Game() {
     }
 
     /**
+     * Saves the game score 
+     * @param {boolean} win 
+     */
+    async function saveScore(win: boolean) {
+        const newScore = {
+            uid: session?.user?.id,
+            time: seconds,
+            numMines: NUM_MINES,
+            win: win, 
+            numCleared: clearedCells.length,
+            numRows: ROWS,
+            numCols: COLS,
+        };
+        await createMinesweeperScore(newScore);
+    }
+
+    /**
      * Sets the game to the correct state based on whether or not the player won. 
      * Also saves the score if they won.
-     * @param {boolean} won 
+     * @param {boolean} win 
      */
-    function endGame(won: boolean) {
-        if (won) {
+    function endGame(win: boolean) {
+        if (!gameRunning) return;
+        if (win) {
             setGameWon(true);
-            saveScore();
         }
         else {
             setGameOver(true);
         }
+        saveScore(win);
         setGameRunning(false);
     }
 
