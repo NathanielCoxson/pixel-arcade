@@ -4,6 +4,7 @@ export type MinesweeperScore = {
     time: number,
     numMines: number,
     timestamp: Date,
+    win: boolean,
 }
 
 export type SnakeScore = {
