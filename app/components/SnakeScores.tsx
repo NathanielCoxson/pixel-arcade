@@ -14,7 +14,8 @@ export default async function SnakeScores() {
     }
 
     return (
-        <div className="px-4 max-h-40 overflow-auto">
+        <div className="flex flex-col justify-center items-center text-center px-4 max-h-40 overflow-auto">
+            {scores?.length > 0 && <h2 className="font-bold">Snake</h2>}
             <ul>
                 {scores?.map((score: SnakeScore) => {
                     const day = score.timestamp.getDate();
