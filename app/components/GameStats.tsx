@@ -1,10 +1,8 @@
 import { MinesweeperScore, SnakeScore } from "../types";
 import PieChart from "./PieChart";
-import {headers} from 'next/headers';
 
 export default async function GameStats(props: any) {
     const MAX_HIGH_SCORES = 5;
-    const headersList = headers();
 
     /**
      * Returns an object containing the numerical parts of a date including
