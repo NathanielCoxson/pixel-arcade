@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import GameStats from "../components/GameStats";
 import { MinesweeperScore, SnakeScore } from "../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
+import BackButton from "../components/BackButton";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -24,6 +25,7 @@ export default async function Dashboard() {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center text-center p-24 gap-2">
+            <BackButton />
             <h1 className="text-4xl m-4 font-bold">Hello {session?.user?.name}</h1>
             {session && <>
                 <GameStats
