@@ -24,10 +24,10 @@ export default async function Dashboard() {
     }
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center text-center p-24 gap-2">
+        <main className="flex min-h-screen flex-col items-center justify-center text-center p-24 gap-4">
             <BackButton />
-            <h1 className="text-4xl m-4 font-bold">Hello {session?.user?.name}</h1>
-            {session && <>
+            <h1 className="text-4xl font-bold">Hello {session?.user?.name}</h1>
+            {session && <div className="w-fit flex flex-col gap-4">
                 <GameStats
                     user={session.user}
                     game='minesweeper'
@@ -38,7 +38,7 @@ export default async function Dashboard() {
                     game='snake'
                     scores={snakeScores}
                 /> 
-            </>}
+            </div>}
         </main>
     )
 }

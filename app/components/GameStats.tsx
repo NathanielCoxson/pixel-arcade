@@ -27,7 +27,7 @@ export default async function GameStats(props: any) {
     }
 
     return (
-        <div className="p-4 rounded-lg bg-gradient-to-br from-black to-slate-800 text-white">
+        <div className="p-4 rounded-lg bg-gradient-to-br from-black to-slate-800 text-white w-full">
             <div className="text-left font-bold">
                 {props.game === 'minesweeper' && <h1 className="text-xl">Minesweeper</h1>}
                 {props.game === 'snake' && <h1 className="text-xl">Snake</h1>}
