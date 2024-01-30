@@ -43,12 +43,11 @@ export default function Game() {
         return arr;
     }
 
-    // TODO make this not a callback after the playGame function is created, since this will no longer
-    // be called inside of a useEffect
     /**
      * Places mines randomly within the board matrix
      */
-    const placeMines = useCallback(() => {
+    function placeMines() {
+        setBoard([]);
         let newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         const totalPixels = ROWS * COLS;
         const positions = Array.from({ length: totalPixels }, (_, index) => index);
@@ -79,7 +78,7 @@ export default function Game() {
         }
 
         setBoard(newBoard);
-    }, []);
+    }
 
     /**
      * Automatically clears cells adjacent to the one at the given position where possible.
@@ -128,7 +127,6 @@ export default function Game() {
                         }
                         if (board[newRow][newCol] === -1) {
                             endGame(false);
-                            console.log('2');
                             return;
                         }
                         q.push([newRow, newCol]);
@@ -156,6 +154,7 @@ export default function Game() {
         const cell = event.target;
         const row: number = Number(cell.id.split('-')[0]);
         const col: number = Number(cell.id.split('-')[1]);
+        setClearedCells([...clearedCells, [row, col]]);
         cell.innerHTML = board[row][col];
         cell.style.backgroundColor = "transparent";
         cell.style.cursor = "default";
@@ -165,7 +164,6 @@ export default function Game() {
         if (!cellIsMine) autoClearCells([row, col]);
         else {
             endGame(false);
-            console.log('1');
         }
 
         if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
@@ -189,7 +187,7 @@ export default function Game() {
         let newFlags = [...flags];
         if (cell.style.backgroundColor === 'crimson') {
             cell.style.backgroundColor = 'gold';
-            newFlags[row][col] = 0;
+            newFlags[row][col] = -1;
             setNumFlags(prev => prev - 1);
         }
         else if (cell.style.backgroundColor === 'gold') {
@@ -210,11 +208,39 @@ export default function Game() {
      * it is at the start of a new game.
      */
     function playGame() {
+        // Reset cell styles from old board state
+        if (clearedCells.length > 0) {
+            for (const [row, col] of clearedCells) {
+                const cell = document.getElementById(`${row}-${col}`)
+                if (cell) {
+                    cell.style.backgroundColor = 'black';
+                    cell.innerHTML = '';
+                    cell.style.cursor = 'pointer';
+                }
+            }
+            setClearedCells([]);
+        }
+        for (let row = 0; row < flags.length; row++) {
+            for (let col = 0; col < flags[row].length; col++) {
+                if (flags[row][col] != 0) {
+                    const cell = document.getElementById(`${row}-${col}`)
+                    if (cell) {
+                        cell.style.backgroundColor = 'black';
+                        cell.innerHTML = '';
+                        cell.style.cursor = 'pointer';
+                    }
+                }
+            }
+        }
+
+        // Reset state
         setGameOver(false);
         setGameWon(false);
         setGameRunning(true);
         placeMines();
         setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
+        setNumFlags(0);
+        setSeconds(0);
     }
 
     /**
