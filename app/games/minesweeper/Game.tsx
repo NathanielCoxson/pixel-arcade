@@ -222,6 +222,7 @@ export default function Game() {
      * @param {boolean} win 
      */
     async function saveScore(win: boolean) {
+        if (!session) return;
         const newScore = {
             uid: session?.user?.id,
             time: seconds,
