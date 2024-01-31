@@ -210,7 +210,10 @@ export default function Game() {
     function playGame() {
         // Reset cell styles from old board state
         if (clearedCells.length > 0) {
-            for (const [row, col] of clearedCells) {
+            setClearedCells([]);
+        }
+        for (let row = 0; row < board.length; row++) {
+            for (let col = 0; col < board[row].length; col++) {
                 const cell = document.getElementById(`${row}-${col}`)
                 if (cell) {
                     cell.style.backgroundColor = 'black';
@@ -218,7 +221,6 @@ export default function Game() {
                     cell.style.cursor = 'pointer';
                 }
             }
-            setClearedCells([]);
         }
         for (let row = 0; row < flags.length; row++) {
             for (let col = 0; col < flags[row].length; col++) {
