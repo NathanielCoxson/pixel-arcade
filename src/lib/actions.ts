@@ -5,14 +5,16 @@ import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
 
+const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 const NewUserFormSchema = z.object({
     username: z.string(),
-    password: z.string(),
+    password: z.string().regex(passwordRegex, { message: 'Password is too weak' }),
     retypedPassword: z.string(),
-    message: z.string(),
-});
-
-const CreateNewUser = NewUserFormSchema.omit({ message: true });
+})
+    .refine(
+        (schema) => schema.password === schema.retypedPassword,
+        { message: 'Passwords do not match' }
+    );
 
 /**
  * Server action that creates a new user in the database given a new user object. 
@@ -22,34 +24,27 @@ const CreateNewUser = NewUserFormSchema.omit({ message: true });
  */
 export async function createUser(prevState: any, formData: FormData) {
     const saltRounds = 12;
-    const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 
     // Extract form data
-    const { username, password, retypedPassword } = CreateNewUser.parse({
+    const validatedFields = NewUserFormSchema.safeParse({
         username: formData.get('username'),
         password: formData.get('password'),
         retypedPassword: formData.get('retypedPassword'),
     });
+    if (!validatedFields.success) {
+        return {
+            ...prevState,
+            message: validatedFields.error.errors[0].message,
+        }
+    }
 
-    const userByUsername = await prisma.users.findFirst({
-        where: { username },
-    });
+    // Check if user already exists
+    const { username, password } = validatedFields.data;
+    const userByUsername = await prisma.users.findFirst({ where: { username }, });
     if (userByUsername) {
         return {
             ...prevState,
             message: 'That username is taken'
-        }
-    }
-    if (password !== retypedPassword) {
-        return {
-            ...prevState,
-            message: 'Passwords do not match',
-        }
-    }
-    if (!passwordRegex.test(password)) {
-        return {
-            ...prevState,
-            message: 'Password too weak',
         }
     }
 

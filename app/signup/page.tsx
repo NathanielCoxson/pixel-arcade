@@ -38,7 +38,7 @@ export default function Signup() {
                             type="password"
                         ></input>
                     </div>
-                    <p>{state?.message}</p>
+                    {state?.message && <p>{state?.message}</p>}
                     <button type='submit'>Submit</button>
                 </div>
             </form>
