@@ -44,40 +44,85 @@ export default function Game() {
     }
 
     /**
-     * Places mines randomly within the board matrix
+     * Sets the board to a new minesweeper board 
      */
-    function placeMines() {
+    function setupBoard() {
         setBoard([]);
-        let newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        const totalPixels = ROWS * COLS;
+
+        const newBoard = getFilledBoard(ROWS, COLS, NUM_MINES);
+        console.log(newBoard);
+
+        setBoard(newBoard);
+    }
+
+    /**
+     * Returns a matrix of dimensions numRows X numCols
+     * with  
+     * @param {number} numRows 
+     * @param {number} numCols 
+     * @param {number} numMines 
+     * @returns {number[][]} the mine matrix
+     */
+    function getMineBoard(numRows: number, numCols: number, numMines: number): number[][] {
+        const mineBoard = Array.from({ length: numRows }, () => Array(numCols).fill(0));
+        const totalPixels = numRows * numCols;
         const positions = Array.from({ length: totalPixels }, (_, index) => index);
         const minePositions = getShuffledArray(positions).slice(0, NUM_MINES);
 
         for (let pos of minePositions) {
             const row = Math.floor(pos / COLS);
             const col = pos % COLS;
-            newBoard[row][col] = -1; 
+            mineBoard[row][col] = -1; 
         }
 
+        return mineBoard;
+    }
+
+    /**
+     * Returns the number of mines that are adjacent to board[row][col] 
+     * @param {number} row 
+     * @param {number} col 
+     * @param {number[][]} board 
+     * @returns {number} 
+     */
+    function calculateAdjacentMines(row: number, col: number, board: number[][]): number {
         const directions = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
-        for (let row = 0; row < newBoard.length; row++) {
-            for (let col = 0; col < newBoard[row].length; col++) {
-                if (newBoard[row][col] === -1) continue;
-                let count = 0;
-                for (let dir of directions) {
-                    const newRow = row + dir[0];
-                    const newCol = col + dir[1];
-                    if (
-                        0 <= newRow && newRow < ROWS &&
-                        0 <= newCol && newCol < COLS &&
-                        newBoard[newRow][newCol] === -1
-                    ) count++;
+        let count = 0;
+        for (let dir of directions) {
+            const newRow = row + dir[0];
+            const newCol = col + dir[1];
+            if (
+                0 <= newRow && newRow < board.length &&
+                0 <= newCol && newCol < board[newRow].length &&
+                board[newRow][newCol] === -1
+            ) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Returns a filled minesweeper board with the dimensions numRows X numCols
+     * and containing numMines number of mines. 
+     * @param {number} numRows 
+     * @param {number} numCols 
+     * @param {number} numMines 
+     * @returns {number[][]} 
+     */
+    function getFilledBoard(numRows: number, numCols: number, numMines: number): number[][] {
+        const mineBoard = getMineBoard(numRows, numCols, numMines);
+        const filledBoard: number[][] = Array.from({ length: mineBoard.length }, () => Array(mineBoard[0].length).fill(0));
+
+        for (let row = 0; row < mineBoard.length; row++) {
+            for (let col = 0; col < mineBoard[row].length; col++) {
+                if (mineBoard[row][col] === -1) {
+                    filledBoard[row][col] = -1; 
+                    continue;
                 }
-                newBoard[row][col] = count;
+                filledBoard[row][col] = calculateAdjacentMines(row, col, mineBoard);
             }
         }
 
-        setBoard(newBoard);
+        return filledBoard;
     }
 
     /**
@@ -239,7 +284,7 @@ export default function Game() {
         setGameOver(false);
         setGameWon(false);
         setGameRunning(true);
-        placeMines();
+        setupBoard();
         setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
         setNumFlags(0);
         setSeconds(0);
