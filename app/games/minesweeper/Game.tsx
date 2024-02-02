@@ -17,6 +17,7 @@ export default function Game() {
     const [clearedCells, setClearedCells] = useState<[number, number][]>([]);
     const [seconds, setSeconds] = useState<number>(0);
     const [gameRunning, setGameRunning] = useState<boolean>(false);
+    const [firstMove, setFirstMove] = useState<boolean>(false);
 
     // Timer interval
     useEffect(() => {
@@ -44,49 +45,96 @@ export default function Game() {
     }
 
     /**
-     * Places mines randomly within the board matrix
+     * Sets the board to a new minesweeper board 
      */
-    function placeMines() {
+    function setupBoard() {
         setBoard([]);
-        let newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        const totalPixels = ROWS * COLS;
+
+        const mineBoard = getMineBoard(ROWS, COLS, NUM_MINES);
+        const newBoard = getFilledBoard(mineBoard);
+        console.log(newBoard);
+
+        setBoard(newBoard);
+    }
+
+    /**
+     * Returns a matrix of dimensions numRows X numCols
+     * with numMines number of mines.
+     * @param {number} numRows 
+     * @param {number} numCols 
+     * @param {number} numMines 
+     * @returns {number[][]} the mine matrix
+     */
+    function getMineBoard(numRows: number, numCols: number, numMines: number): number[][] {
+        const mineBoard = Array.from({ length: numRows }, () => Array(numCols).fill(0));
+        const totalPixels = numRows * numCols;
         const positions = Array.from({ length: totalPixels }, (_, index) => index);
         const minePositions = getShuffledArray(positions).slice(0, NUM_MINES);
 
         for (let pos of minePositions) {
             const row = Math.floor(pos / COLS);
             const col = pos % COLS;
-            newBoard[row][col] = -1; 
+            mineBoard[row][col] = -1; 
         }
 
+        return mineBoard;
+    }
+
+    /**
+     * Returns the number of mines that are adjacent to board[row][col] 
+     * @param {number} row 
+     * @param {number} col 
+     * @param {number[][]} board 
+     * @returns {number} 
+     */
+    function calculateAdjacentMines(row: number, col: number, board: number[][]): number {
         const directions = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
-        for (let row = 0; row < newBoard.length; row++) {
-            for (let col = 0; col < newBoard[row].length; col++) {
-                if (newBoard[row][col] === -1) continue;
-                let count = 0;
-                for (let dir of directions) {
-                    const newRow = row + dir[0];
-                    const newCol = col + dir[1];
-                    if (
-                        0 <= newRow && newRow < ROWS &&
-                        0 <= newCol && newCol < COLS &&
-                        newBoard[newRow][newCol] === -1
-                    ) count++;
+        let count = 0;
+        for (let dir of directions) {
+            const newRow = row + dir[0];
+            const newCol = col + dir[1];
+            if (
+                0 <= newRow && newRow < board.length &&
+                0 <= newCol && newCol < board[newRow].length &&
+                board[newRow][newCol] === -1
+            ) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Returns a filled minesweeper board given a matrix of mine locations.
+     * @param {number[][]} mineBoard
+     * @returns {number[][]} 
+     */
+    function getFilledBoard(mineBoard: number[][]): number[][] {
+        if (!mineBoard || mineBoard.length === 0) return [];
+        const filledBoard: number[][] = Array.from({ length: mineBoard.length }, () => Array(mineBoard[0].length).fill(0));
+
+        for (let row = 0; row < mineBoard.length; row++) {
+            for (let col = 0; col < mineBoard[row].length; col++) {
+                if (mineBoard[row][col] === -1) {
+                    filledBoard[row][col] = -1; 
+                    continue;
                 }
-                newBoard[row][col] = count;
+                filledBoard[row][col] = calculateAdjacentMines(row, col, mineBoard);
             }
         }
 
-        setBoard(newBoard);
+        return filledBoard;
     }
 
     /**
      * Automatically clears cells adjacent to the one at the given position where possible.
      * @param {[number, number]} position 
+     * @param {[number, number][]} clearedCells
+     * @returns {[number, number][]}
      */
-    function autoClearCells(position: [number, number]): void {
+    function autoClearCells(position: [number, number], clearedCells: [number, number][]): [number, number][] {
+        console.log(board);
         let q: [number, number][] = [];
         let visited: [number, number][] = [...clearedCells];
+        let newClearedCells: [number, number][] = [];
         q.push(position);
 
         while (q.length > 0) {
@@ -108,6 +156,7 @@ export default function Game() {
                     else if (!cellCleared) numUncleared++;
                 }
             }
+
             if (board[row][col] === 0 || board[row][col] - numFlags === 0) {
                 for (let dir of directions) {
                     const newRow: number = Number(row) + Number(dir[0]);
@@ -124,26 +173,22 @@ export default function Game() {
                             cell.innerHTML = String(board[newRow][newCol]);
                             cell.style.backgroundColor = "transparent";
                             cell.style.cursor = "default";
+                            const cleared = !!clearedCells.find(([r, c]: [number, number]) => r === newRow && c === newCol);
+                            const visited = !!newClearedCells.find(([r, c]: [number, number]) => r === newRow && c === newCol);
+                            if (!cleared && !visited) newClearedCells.push([newRow, newCol]);
                         }
                         if (board[newRow][newCol] === -1) {
                             endGame(false);
-                            return;
+                            return newClearedCells;
                         }
-                        q.push([newRow, newCol]);
+                        if (board[newRow][newCol] === 0) q.push([newRow, newCol]);
                     }
                 }
             }
         }
 
-        let newClearedCells = [...clearedCells];
-        for (let [row, col] of visited) {
-            const cleared = !!clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
-            if (!cleared) newClearedCells.push([row, col]);
-        }
-        if (newClearedCells.length === (ROWS * COLS) - NUM_MINES) {
-            endGame(true);
-        }
-        setClearedCells(newClearedCells);
+        console.log('autocleared:', newClearedCells);
+        return newClearedCells;
     }
 
     /**
@@ -151,24 +196,65 @@ export default function Game() {
      * @param event 
      */
     function clearCell(event: any) {
+        let currentBoard = [...board];
         const cell = event.target;
         const row: number = Number(cell.id.split('-')[0]);
         const col: number = Number(cell.id.split('-')[1]);
-        setClearedCells([...clearedCells, [row, col]]);
-        cell.innerHTML = board[row][col];
-        cell.style.backgroundColor = "transparent";
-        cell.style.cursor = "default";
-        const cellCleared = clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
         const cellIsMine = board[row][col] === -1;
+        const cleared = !!clearedCells.find(([r, c]: [number, number]) => r === row && c === col);
+        let newClearedCells: [number, number][] = [...clearedCells];
+        if (!cleared) newClearedCells.push([row, col]);
 
-        if (!cellIsMine) autoClearCells([row, col]);
-        else {
+        if (!cellIsMine && (board[row][col] === 0 || cleared)) newClearedCells = [...newClearedCells, ...autoClearCells([row, col], newClearedCells)];
+        else if (firstMove) {
+            currentBoard = getSafeBoard(row, col, board);
+        }
+        else if (cellIsMine) {
             endGame(false);
         }
 
-        if (clearedCells.length === (ROWS * COLS) - NUM_MINES) {
+        cell.innerHTML = currentBoard[row][col];
+        cell.style.backgroundColor = "transparent";
+        cell.style.cursor = "default";
+
+        console.log(newClearedCells);
+        setClearedCells(newClearedCells);
+        if (firstMove) setFirstMove(false);
+        if (newClearedCells.length === (ROWS * COLS) - NUM_MINES) {
             endGame(true);
         }
+    }
+
+    /**
+     * Moves a mine at position [row, col] in board to
+     * a random empty cell within board and returns the updated board.
+     * @param {number} row 
+     * @param {number} col 
+     * @returns {number[][]}  
+     */
+    function getSafeBoard(row: number, col: number, board: number[][]): number[][] {
+        // Check preconditions
+        if (
+            row >= board.length || row < 0 ||
+            col >= board[row].length || col < 0 ||
+            board[row][col] !== -1
+        ) return board; 
+
+        const emptyCells: [number, number][] = [];
+        for (let r = 0; r < board.length; r++) {
+            for (let c = 0; c < board[r].length; c++) {
+                if (board[r][c] !== -1) emptyCells.push([r, c]);
+            }
+        }
+
+        let newBoard = [...board];
+        const [newRow, newCol] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        newBoard[newRow][newCol] = -1;
+        newBoard[row][col] = 0;
+        newBoard = getFilledBoard(newBoard);
+        setBoard(newBoard);
+
+        return newBoard;
     }
 
     /**
@@ -239,7 +325,8 @@ export default function Game() {
         setGameOver(false);
         setGameWon(false);
         setGameRunning(true);
-        placeMines();
+        setFirstMove(true);
+        setupBoard();
         setFlags(Array.from({ length: ROWS }, () => Array(COLS).fill(0)));
         setNumFlags(0);
         setSeconds(0);
