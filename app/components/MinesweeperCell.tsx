@@ -6,12 +6,17 @@ import { useEffect, useState } from "react";
 import { State } from "../testing/utils";
 
 export default function MinesweeperCell(props: any) {
-    const { value, state, clearCell, row, col } = props;
+    const { value, state, clearCell, row, col, flagCell } = props;
     const [visible, setVisible] = useState<boolean>(state === State.Visible);
 
     function handleClick() {
-        if (visible) return;
+        if (visible || state === State.Flagged) return;
         clearCell(row, col);
+    }
+    
+    function handleRightClick() {
+        if (visible) return;
+        flagCell(row, col);
     }
 
     useEffect(() => {
@@ -19,7 +24,7 @@ export default function MinesweeperCell(props: any) {
     }, [state]);
 
     return (
-        <div className="relative w-full h-full select-none" onClick={handleClick}>
+        <div className="relative w-full h-full select-none" onClick={handleClick} onContextMenu={handleRightClick}>
             <Image 
                 src={minesweeperImages.empty} 
                 fill={true} alt="Minesweeper empty cell" 
@@ -27,8 +32,15 @@ export default function MinesweeperCell(props: any) {
                 onContextMenu={(e) => e.preventDefault()} 
                 draggable={false}
             />
-            {!visible && <Image 
+            {!visible && state === State.Covered && <Image 
                 src={minesweeperImages.covered} 
+                fill={true} alt="Minesweeper blank cell" 
+                priority={true}
+                onContextMenu={(e) => e.preventDefault()} 
+                draggable={false}
+            />}
+            {!visible && state === State.Flagged && <Image 
+                src={minesweeperImages.flag} 
                 fill={true} alt="Minesweeper blank cell" 
                 priority={true}
                 onContextMenu={(e) => e.preventDefault()} 

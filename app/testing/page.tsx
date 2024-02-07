@@ -17,6 +17,13 @@ export default function Testing() {
         newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
         setBoard(newBoard);
     }
+
+    function flagCell(row: number, col: number) {
+        console.log("Flagged:", row, col);
+        const newBoard = [...board];
+        newBoard[row][col] = { ...newBoard[row][col], state: State.Flagged }
+        setBoard(newBoard);
+    }
     
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">
@@ -31,6 +38,7 @@ export default function Testing() {
                                 <MinesweeperCell 
                                     value={board[i][j].value}
                                     clearCell={clearCell}
+                                    flagCell={flagCell}
                                     state={board[i][j].state}
                                     row={i}
                                     col={j}

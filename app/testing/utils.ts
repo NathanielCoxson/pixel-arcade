@@ -10,6 +10,8 @@ export type Cell = {
     state: State
 }
 
+const DIRECTIONS: [number, number][] = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+
 /**
  * Returns an array which contains the numbers
  * of the given array but shuffled.
@@ -94,6 +96,23 @@ export function getFilledBoard(rows: number, cols: number, numMines: number): Ce
     return filledBoard;
 }
 
-export function clearSurroundingCells(board: number[][], states: State[][]) {
+/**
+ * Sets the state of all cells adjacent to the cell at
+ * [row][col] to visible. 
+ * @param {number} row 
+ * @param {number} col 
+ * @param {Cell[][]} board 
+ */
+export function clearAdjacentCells(row: number, col: number, board: Cell[][]) {
+    for (const [dr, dc] of DIRECTIONS) {
+        const newRow = row + dr, newCol = col + dc;
+        if (
+            newRow < 0 ||
+            newRow >= board.length ||
+            newCol < 0 ||
+            newCol >= board[0].length
+        ) continue; 
 
+        board[newRow][newCol] = { ...board[newRow][newCol], state: State.Visible };
+    }
 }
