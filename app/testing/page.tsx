@@ -1,6 +1,6 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Cell, State } from "./utils";
 import * as utils from './utils';
 
@@ -11,10 +11,19 @@ export default function Testing() {
 
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     
-    function clearCell(row: number, col: number) {
+    function clearCell(row: number, col: number, clearAdjacent: boolean) {
         console.log("Clearing:", row, col);
         const newBoard = [...board];
-        newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
+
+        const numFlags = utils.calcualteAdjacentFlags(row, col, board);
+        const safeToClear = (board[row][col].value - numFlags) <= 0;
+        if (clearAdjacent && safeToClear) {
+            utils.clearAdjacentCells(row, col, newBoard);
+        }
+        else {
+            newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
+        }
+
         setBoard(newBoard);
     }
 

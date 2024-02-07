@@ -113,6 +113,33 @@ export function clearAdjacentCells(row: number, col: number, board: Cell[][]) {
             newCol >= board[0].length
         ) continue; 
 
+        const flagged = board[newRow][newCol].state === State.Flagged;
+        const visible = board[newRow][newCol].state === State.Visible;
+        if (flagged || visible) continue;
+
         board[newRow][newCol] = { ...board[newRow][newCol], state: State.Visible };
     }
+}
+
+/**
+ * Returns the number of adjacent cells that are flagged.
+ * @param {number} row 
+ * @param {number} col 
+ * @param {Cell[][]} board 
+ */
+export function calcualteAdjacentFlags(row: number, col: number, board: Cell[][]): number {
+    let count = 0;
+    for (const [dr, dc] of DIRECTIONS) {
+        const newRow = row + dr, newCol = col + dc;
+        if (
+            newRow < 0 ||
+            newRow >= board.length ||
+            newCol < 0 ||
+            newCol >= board[0].length
+        ) continue; 
+        
+        const flagged = board[newRow][newCol].state === State.Flagged;
+        if (flagged) count++;
+    }
+    return count;
 }
