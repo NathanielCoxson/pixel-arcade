@@ -1,16 +1,34 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function Testing() {
     const [board, setBoard] = useState<number[][]>(Array.from({ length: 10 }, () => Array(10).fill(0)));
+    const [visibleCells, setVisibleCells] = useState<boolean[][]>(Array.from({ length: 10 }, () => Array(10).fill(false)));
+
+    useEffect(() => {
+        setBoard([
+            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+            [1, -1, 1, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ])
+    }, []);
+    
     function updateBoard(row: number, col: number) {
-        console.log('cell clicked:', row, col);
-        console.log(board);
-        const newBoard = [...board];
-        newBoard[0][0] = 1;
-        setBoard(newBoard);
+        const newVisibleCells = [...visibleCells];
+
+        newVisibleCells[row][col] = true;
+
+        setVisibleCells(newVisibleCells);
     }
+    
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">
             <div></div>
@@ -21,7 +39,13 @@ export default function Testing() {
                                 key={`${i}-${j}`}
                                 className="relative max-h-full max-w-full flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
                             >
-                                <MinesweeperCell value={1} visible={board[i][j]} updateBoard={updateBoard} row={i} col={j}/>
+                                <MinesweeperCell 
+                                    value={board[i][j]}
+                                    visible={visibleCells[i][j]}
+                                    updateBoard={updateBoard}
+                                    row={i}
+                                    col={j}
+                                />
                             </div>
                         })
                     })}
