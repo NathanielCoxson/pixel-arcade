@@ -3,6 +3,8 @@ import GameStats from "../components/GameStats";
 import { MinesweeperScore, SnakeScore } from "../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
 import BackButton from "../components/BackButton";
+import { minesweeperImages } from "@/src/assets/minesweeperImages";
+import Image from "next/image";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -39,6 +41,9 @@ export default async function Dashboard() {
                     scores={snakeScores}
                 /> 
             </div>}
+            <div className="relative border-2 border-red-500 w-28 h-28 hover:cursor-pointer">
+                <Image src={minesweeperImages.one} fill={true} alt="Minesweeper one cell"/>
+            </div>
         </main>
     )
 }

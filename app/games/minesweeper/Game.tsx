@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import { useSession } from "next-auth/react";
+import * as utils from './utils';
 
 export default function Game() {
     const ROWS = 10;
@@ -31,97 +32,16 @@ export default function Game() {
     }, [gameRunning]);
 
     /**
-     * Returns an array which contains the numbers
-     * of the given array but shuffled.
-     * @param {number[]} arr 
-     * @returns {number[]}
-     */
-    function getShuffledArray(arr: number[]): number[] {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const randomIndex = Math.floor(Math.random() * i);
-            [arr[i], arr[randomIndex]] = [arr[randomIndex], arr[i]];
-        }
-        return arr;
-    }
-
-    /**
      * Sets the board to a new minesweeper board 
      */
     function setupBoard() {
         setBoard([]);
 
-        const mineBoard = getMineBoard(ROWS, COLS, NUM_MINES);
-        const newBoard = getFilledBoard(mineBoard);
+        const mineBoard = utils.getMineBoard(ROWS, COLS, NUM_MINES);
+        const newBoard = utils.getFilledBoard(mineBoard);
         console.log(newBoard);
 
         setBoard(newBoard);
-    }
-
-    /**
-     * Returns a matrix of dimensions numRows X numCols
-     * with numMines number of mines.
-     * @param {number} numRows 
-     * @param {number} numCols 
-     * @param {number} numMines 
-     * @returns {number[][]} the mine matrix
-     */
-    function getMineBoard(numRows: number, numCols: number, numMines: number): number[][] {
-        const mineBoard = Array.from({ length: numRows }, () => Array(numCols).fill(0));
-        const totalPixels = numRows * numCols;
-        const positions = Array.from({ length: totalPixels }, (_, index) => index);
-        const minePositions = getShuffledArray(positions).slice(0, NUM_MINES);
-
-        for (let pos of minePositions) {
-            const row = Math.floor(pos / COLS);
-            const col = pos % COLS;
-            mineBoard[row][col] = -1; 
-        }
-
-        return mineBoard;
-    }
-
-    /**
-     * Returns the number of mines that are adjacent to board[row][col] 
-     * @param {number} row 
-     * @param {number} col 
-     * @param {number[][]} board 
-     * @returns {number} 
-     */
-    function calculateAdjacentMines(row: number, col: number, board: number[][]): number {
-        const directions = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
-        let count = 0;
-        for (let dir of directions) {
-            const newRow = row + dir[0];
-            const newCol = col + dir[1];
-            if (
-                0 <= newRow && newRow < board.length &&
-                0 <= newCol && newCol < board[newRow].length &&
-                board[newRow][newCol] === -1
-            ) count++;
-        }
-        return count;
-    }
-
-    /**
-     * Returns a filled minesweeper board given a matrix of mine locations.
-     * @param {number[][]} mineBoard
-     * @returns {number[][]} 
-     */
-    function getFilledBoard(mineBoard: number[][]): number[][] {
-        if (!mineBoard || mineBoard.length === 0) return [];
-        const filledBoard: number[][] = Array.from({ length: mineBoard.length }, () => Array(mineBoard[0].length).fill(0));
-
-        for (let row = 0; row < mineBoard.length; row++) {
-            for (let col = 0; col < mineBoard[row].length; col++) {
-                if (mineBoard[row][col] === -1) {
-                    filledBoard[row][col] = -1; 
-                    continue;
-                }
-                filledBoard[row][col] = calculateAdjacentMines(row, col, mineBoard);
-            }
-        }
-
-        return filledBoard;
     }
 
     /**
@@ -251,7 +171,7 @@ export default function Game() {
         const [newRow, newCol] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         newBoard[newRow][newCol] = -1;
         newBoard[row][col] = 0;
-        newBoard = getFilledBoard(newBoard);
+        newBoard = utils.getFilledBoard(newBoard);
         setBoard(newBoard);
 
         return newBoard;
