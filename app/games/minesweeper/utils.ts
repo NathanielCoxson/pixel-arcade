@@ -56,3 +56,25 @@ export function calculateAdjacentMines(row: number, col: number, board: number[]
     }
     return count;
 }
+
+/**
+ * Returns a filled minesweeper board given a matrix of mine locations.
+ * @param {number[][]} mineBoard
+ * @returns {number[][]} 
+ */
+export function getFilledBoard(mineBoard: number[][]): number[][] {
+    if (!mineBoard || mineBoard.length === 0) return [];
+    const filledBoard: number[][] = Array.from({ length: mineBoard.length }, () => Array(mineBoard[0].length).fill(0));
+
+    for (let row = 0; row < mineBoard.length; row++) {
+        for (let col = 0; col < mineBoard[row].length; col++) {
+            if (mineBoard[row][col] === -1) {
+                filledBoard[row][col] = -1;
+                continue;
+            }
+            filledBoard[row][col] = calculateAdjacentMines(row, col, mineBoard);
+        }
+    }
+
+    return filledBoard;
+}
