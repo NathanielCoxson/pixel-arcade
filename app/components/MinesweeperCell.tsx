@@ -14,10 +14,24 @@ export default function MinesweeperCell(props: any) {
     }
 
     return (
-        <div className="relative w-full h-full select-none border-2 border-slate-400" onClick={handleClick}>
+        <div className="relative w-full h-full select-none" onClick={handleClick}>
+            <Image 
+                src={minesweeperImages.empty} 
+                fill={true} alt="Minesweeper empty cell" 
+                priority={true}
+                onContextMenu={(e) => e.preventDefault()} 
+                draggable={false}
+            />
             {!visible && <Image 
                 src={minesweeperImages.covered} 
                 fill={true} alt="Minesweeper blank cell" 
+                priority={true}
+                onContextMenu={(e) => e.preventDefault()} 
+                draggable={false}
+            />}
+            {visible && value === -1 && props && <Image 
+                src={minesweeperImages.mine} 
+                fill={true} alt="Minesweeper mine cell" 
                 priority={true}
                 onContextMenu={(e) => e.preventDefault()} 
                 draggable={false}

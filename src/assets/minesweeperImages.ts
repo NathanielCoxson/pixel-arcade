@@ -7,9 +7,13 @@ import six from './minesweeper-six.svg';
 import seven from './minesweeper-seven.svg';
 import eight from './minesweeper-eight.svg';
 import covered from './minesweeper-covered.svg';
+import mine from './minesweeper-mine.svg';
+import empty from './minesweeper-empty.svg';
 
 export const minesweeperImages = {
     covered,
+    mine,
+    empty,
     one,
     two,
     three,

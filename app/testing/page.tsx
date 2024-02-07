@@ -1,25 +1,25 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
 import { useEffect, useState } from "react"
+import * as utils from './utils';
 
 export default function Testing() {
-    const [board, setBoard] = useState<number[][]>(Array.from({ length: 10 }, () => Array(10).fill(0)));
+    const [board, setBoard] = useState<number[][]>([]);
     const [visibleCells, setVisibleCells] = useState<boolean[][]>(Array.from({ length: 10 }, () => Array(10).fill(false)));
 
     useEffect(() => {
-        setBoard([
-            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-            [1, -1, 1, 0, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ])
+        const newBoard = utils.getMineBoard(10, 10, 25);
+        for (let i = 0; i < newBoard.length; i++) {
+            for (let j = 0; j < newBoard[i].length; j++) {
+                if (newBoard[i][j] !== -1) newBoard[i][j] = utils.calculateAdjacentMines(i, j, newBoard);
+            }
+        }
+        setBoard(newBoard);
     }, []);
+    
+    useEffect(() => {
+        console.log(board);
+    }, [board]);
     
     function updateBoard(row: number, col: number) {
         const newVisibleCells = [...visibleCells];
