@@ -27,7 +27,7 @@ export default function MinesweeperCell(props: any) {
     return (
         <div className="relative w-full h-full select-none" onClick={handleClick} onContextMenu={handleRightClick}>
             <Image 
-                src={minesweeperImages.empty} 
+                src={visible ? minesweeperImages.empty : minesweeperImages.covered} 
                 fill={true} alt="Minesweeper empty cell" 
                 priority={true}
                 onContextMenu={(e) => e.preventDefault()} 

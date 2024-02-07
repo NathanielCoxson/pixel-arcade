@@ -30,7 +30,9 @@ export default function Testing() {
     function flagCell(row: number, col: number) {
         console.log("Flagged:", row, col);
         const newBoard = [...board];
-        newBoard[row][col] = { ...newBoard[row][col], state: State.Flagged }
+        const currentState = newBoard[row][col].state;
+        const state = currentState === State.Flagged ? State.Covered : State.Flagged;
+        newBoard[row][col] = { ...newBoard[row][col], state };
         setBoard(newBoard);
     }
     
