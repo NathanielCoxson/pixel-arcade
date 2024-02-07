@@ -1,3 +1,15 @@
+export enum State {
+    Visible,
+    Covered,
+    Flagged,
+    Unknown,
+}
+
+export type Cell = {
+    value: number,
+    state: State
+}
+
 /**
  * Returns an array which contains the numbers
  * of the given array but shuffled.
@@ -55,4 +67,33 @@ export function calculateAdjacentMines(row: number, col: number, board: number[]
         ) count++;
     }
     return count;
+}
+
+/**
+ * Returns a filled minesweeper board given the desired dimensions
+ * and number of mines to place. 
+ * @param {number} rows
+ * @param {number} cols
+ * @param {number} numMines
+ * @returns {Cell[][]} 
+ */
+export function getFilledBoard(rows: number, cols: number, numMines: number): Cell[][] {
+    const mineBoard = getMineBoard(rows, cols, numMines);
+    const filledBoard: Cell[][] = Array.from({ length: rows }, () => Array(cols).fill({ value: 0, state: State.Covered }));
+
+    for (let row = 0; row < mineBoard.length; row++) {
+        for (let col = 0; col < mineBoard[row].length; col++) {
+            if (mineBoard[row][col] === -1) {
+                filledBoard[row][col] = { ...filledBoard[row][col], value: -1 };
+                continue;
+            }
+            filledBoard[row][col] = { ...filledBoard[row][col], value: calculateAdjacentMines(row, col, mineBoard) }
+        }
+    }
+
+    return filledBoard;
+}
+
+export function clearSurroundingCells(board: number[][], states: State[][]) {
+
 }

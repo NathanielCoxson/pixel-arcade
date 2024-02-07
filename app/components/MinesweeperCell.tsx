@@ -2,16 +2,21 @@
 
 import { minesweeperImages } from "@/src/assets/minesweeperImages"
 import Image from "next/image"
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { State } from "../testing/utils";
 
 export default function MinesweeperCell(props: any) {
-    const { value, visible, updateBoard, row, col } = props;
-    const [show, setShow] = useState<boolean>(visible);
+    const { value, state, clearCell, row, col } = props;
+    const [visible, setVisible] = useState<boolean>(state === State.Visible);
 
     function handleClick() {
-        updateBoard(row, col);
-        console.log(value, visible);
+        if (visible) return;
+        clearCell(row, col);
     }
+
+    useEffect(() => {
+        setVisible(state === State.Visible)
+    }, [state]);
 
     return (
         <div className="relative w-full h-full select-none" onClick={handleClick}>
