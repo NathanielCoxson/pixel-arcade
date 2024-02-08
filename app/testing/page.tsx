@@ -1,6 +1,6 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Cell, State } from "./utils";
 import * as utils from './utils';
 
@@ -10,6 +10,9 @@ export default function Testing() {
     const NUM_MINES = 25;
 
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
+    const [gameOver, setGameOver] = useState<boolean>(false);
+    const [gameWon, setGameWon] = useState<boolean>(false);
+    const [gameLost, setGameLost] = useState<boolean>(false);
     
     function clearCell(row: number, col: number, clearAdjacent: boolean) {
         console.log("Clearing:", row, col);
@@ -20,9 +23,7 @@ export default function Testing() {
         if (clearAdjacent && safeToClear) {
             utils.clearAdjacentCells(row, col, newBoard);
         }
-        else {
-            newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
-        }
+        newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
 
         setBoard(newBoard);
     }
@@ -35,18 +36,51 @@ export default function Testing() {
         newBoard[row][col] = { ...newBoard[row][col], state };
         setBoard(newBoard);
     }
+
+    function playGame() {
+        setGameOver(false);
+        setGameWon(false);
+        setGameLost(false);
+
+        const emptyBoard = [...board];
+        for (let row = 0; row < emptyBoard.length; row++) {
+            for (let col = 0; col < emptyBoard[row].length; col++) {
+                emptyBoard[row][col] = { ...emptyBoard[row][col], state: State.Covered };
+            }
+        }
+        setBoard([]);
+        setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
+
+    }
+
+    useEffect(() => console.log(board), [board]);
     
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">
-            <div></div>
-            <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height">
+            <section className="flex flex-col gap-4">
+                {/* Notification Overlays */}
+                {/* Game Won */}
+                {gameWon && <div className="absolute z-10 min-w-game-width min-h-game-height">
+                    {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-black text-3xl font-bold p-4 bg-white/75 rounded-full">
+                        You Win!
+                    </h2>}
+                </div>}
+                {/* Game Over */}
+                {gameLost && <div className="absolute z-10 min-w-game-width min-h-game-height">
+                    {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-black text-3xl font-bold p-4 bg-white/75 rounded-full">
+                        Game Over
+                    </h2>}
+                </div>}
+
+                {/* Game Board */}
+                <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height">
                     {board.map((row: Cell[], i: number) => {
                         return row.map((value: Cell, j: number) => {
                             return <div
                                 key={`${i}-${j}`}
                                 className="relative max-h-full max-w-full flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
                             >
-                                <MinesweeperCell 
+                                <MinesweeperCell
                                     value={board[i][j].value}
                                     clearCell={clearCell}
                                     flagCell={flagCell}
@@ -58,6 +92,19 @@ export default function Testing() {
                         })
                     })}
                 </div>
+
+                {/* Controls */}
+                <div className="flex gap-4 items-center">
+                    {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
+                    <h3 className="font-semibold">Controls:</h3>
+                    <button
+                        className="border border-black p-1 hover:bg-green-400"
+                        onClick={playGame}
+                    >
+                        Play
+                    </button>
+                </div>
+            </section>
         </main>
     )
 }
