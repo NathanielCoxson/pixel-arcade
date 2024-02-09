@@ -102,21 +102,23 @@ export function getFilledBoard(rows: number, cols: number, numMines: number): Ce
  * @param {number} row 
  * @param {number} col 
  * @param {Cell[][]} board 
- * @returns {boolean} false if a bomb is hit and true if clearing was successful
+ * @returns { numCleared: number, success: boolean } 
  */
-export function clearAdjacentCells(row: number, col: number, board: Cell[][]): boolean {
+export function clearFromCell(row: number, col: number, board: Cell[][]): { numCleared: number, success: boolean } {
     let q: [number, number][] = [];
-    let mineFound = false;
+    let success = true;
+    let numCleared = board[row][col].state === State.Visible ? 0 : 1;
+    let numMines = 0;
 
     // Show starting cell
     board[row][col] = { ...board[row][col], state: State.Visible };
     // Check starting cell
-    if (board[row][col].value === -1) return false;
+    if (board[row][col].value === -1) return { numCleared: 0, success: false };
 
     // Return early if adjacent clearing isn't safe
     const numFlags = calcualteAdjacentFlags(row, col, board);
     const safeToClear = (board[row][col].value - numFlags) <= 0;
-    if (!safeToClear) return true;
+    if (!safeToClear) return { numCleared: 1, success: true };
 
     q.push([row, col]);
     while (q.length > 0) {
@@ -137,16 +139,20 @@ export function clearAdjacentCells(row: number, col: number, board: Cell[][]): b
             const visible = board[newRow][newCol].state === State.Visible;
             if (flagged || visible) continue;
 
-            if (board[newRow][newCol].value === -1) mineFound = true;
+            if (board[newRow][newCol].value === -1) {
+                success = false; 
+                numMines++;
+            }
 
             board[newRow][newCol] = { ...board[newRow][newCol], state: State.Visible };
+            numCleared++;
 
             // Expand search on empty cells only
             if (board[newRow][newCol].value === 0) q.push([newRow, newCol]);
         }
 
     }
-    return mineFound;
+    return { numCleared: numCleared - numMines, success };
 }
 
 /**

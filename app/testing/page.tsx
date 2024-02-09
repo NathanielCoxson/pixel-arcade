@@ -1,7 +1,7 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import * as utils from './utils';
@@ -18,6 +18,7 @@ export default function Testing() {
     const [gameLost, setGameLost] = useState<boolean>(false);
     const [gameRunning, setGameRunning] = useState<boolean>(false);
     const [seconds, setSeconds] = useState<number>(0);
+    const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
 
     // Timer interval
     useEffect(() => {
@@ -31,20 +32,19 @@ export default function Testing() {
     }, [gameRunning]);
     
     function clearCell(row: number, col: number) {
-        console.log("Clearing:", row, col);
         const newBoard = [...board];
 
+        const { numCleared, success } = utils.clearFromCell(row, col, newBoard);
 
-        const mineFound = utils.clearAdjacentCells(row, col, newBoard);
+        setClearedCellsCount(prev => prev + numCleared);
+        setBoard(newBoard);
         
-        if (mineFound) {
+        if (!success) {
             setGameLost(true);
             setGameRunning(false);
             setGameOver(true);
             return;
         }
-
-        setBoard(newBoard);
     }
 
     function flagCell(row: number, col: number) {
@@ -61,6 +61,7 @@ export default function Testing() {
         setGameWon(false);
         setGameLost(false);
         setGameRunning(true);
+        setClearedCellsCount(0);
 
         const emptyBoard = [...board];
         for (let row = 0; row < emptyBoard.length; row++) {
@@ -71,10 +72,15 @@ export default function Testing() {
         setBoard([]);
         setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     }
-    
+
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">
             <section className="flex flex-col gap-4">
+                <div className="flex gap-4">
+                    <h2>Cleared: {clearedCellsCount}</h2>
+                    {/*<h2>Mines: {NUM_MINES - numFlags}</h2>*/}
+                    <h2>Time: {Math.floor((seconds / (60 * 60)) % 24)}:{Math.floor((seconds / 60) % 60)}:{seconds % 60}</h2>
+                </div>
                 {/* Notification Overlays */}
                 {/* Game Won */}
                 {gameWon && <div className="absolute z-10 min-w-game-width min-h-game-height">
