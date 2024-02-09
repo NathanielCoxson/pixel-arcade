@@ -30,16 +30,19 @@ export default function Testing() {
         return () => clearInterval(timerInterval);
     }, [gameRunning]);
     
-    function clearCell(row: number, col: number, clearAdjacent: boolean) {
+    function clearCell(row: number, col: number) {
         console.log("Clearing:", row, col);
         const newBoard = [...board];
 
-        const numFlags = utils.calcualteAdjacentFlags(row, col, board);
-        const safeToClear = (board[row][col].value - numFlags) <= 0;
-        if (clearAdjacent && safeToClear) {
-            utils.clearAdjacentCells(row, col, newBoard);
+
+        const mineFound = utils.clearAdjacentCells(row, col, newBoard);
+        
+        if (mineFound) {
+            setGameLost(true);
+            setGameRunning(false);
+            setGameOver(true);
+            return;
         }
-        newBoard[row][col] = { ...newBoard[row][col], state: State.Visible };
 
         setBoard(newBoard);
     }
@@ -67,10 +70,7 @@ export default function Testing() {
         }
         setBoard([]);
         setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
-
     }
-
-    useEffect(() => console.log(board), [board]);
     
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">

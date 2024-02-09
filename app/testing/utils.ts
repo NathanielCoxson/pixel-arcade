@@ -102,23 +102,51 @@ export function getFilledBoard(rows: number, cols: number, numMines: number): Ce
  * @param {number} row 
  * @param {number} col 
  * @param {Cell[][]} board 
+ * @returns {boolean} false if a bomb is hit and true if clearing was successful
  */
-export function clearAdjacentCells(row: number, col: number, board: Cell[][]) {
-    for (const [dr, dc] of DIRECTIONS) {
-        const newRow = row + dr, newCol = col + dc;
-        if (
-            newRow < 0 ||
-            newRow >= board.length ||
-            newCol < 0 ||
-            newCol >= board[0].length
-        ) continue; 
+export function clearAdjacentCells(row: number, col: number, board: Cell[][]): boolean {
+    let q: [number, number][] = [];
+    let mineFound = false;
 
-        const flagged = board[newRow][newCol].state === State.Flagged;
-        const visible = board[newRow][newCol].state === State.Visible;
-        if (flagged || visible) continue;
+    // Show starting cell
+    board[row][col] = { ...board[row][col], state: State.Visible };
+    // Check starting cell
+    if (board[row][col].value === -1) return false;
 
-        board[newRow][newCol] = { ...board[newRow][newCol], state: State.Visible };
+    // Return early if adjacent clearing isn't safe
+    const numFlags = calcualteAdjacentFlags(row, col, board);
+    const safeToClear = (board[row][col].value - numFlags) <= 0;
+    if (!safeToClear) return true;
+
+    q.push([row, col]);
+    while (q.length > 0) {
+        const [r, c] = q[0];
+        q = q.slice(1);
+
+        // Check surrounding cells
+        for (const [dr, dc] of DIRECTIONS) {
+            const newRow = r + dr, newCol = c + dc;
+            if (
+                newRow < 0 ||
+                newRow >= board.length ||
+                newCol < 0 ||
+                newCol >= board[0].length
+            ) continue;
+
+            const flagged = board[newRow][newCol].state === State.Flagged;
+            const visible = board[newRow][newCol].state === State.Visible;
+            if (flagged || visible) continue;
+
+            if (board[newRow][newCol].value === -1) mineFound = true;
+
+            board[newRow][newCol] = { ...board[newRow][newCol], state: State.Visible };
+
+            // Expand search on empty cells only
+            if (board[newRow][newCol].value === 0) q.push([newRow, newCol]);
+        }
+
     }
+    return mineFound;
 }
 
 /**
@@ -142,4 +170,8 @@ export function calcualteAdjacentFlags(row: number, col: number, board: Cell[][]
         if (flagged) count++;
     }
     return count;
+}
+
+export function clearCellsRecursively(row: number, col: number, board: Cell[][]) {
+
 }

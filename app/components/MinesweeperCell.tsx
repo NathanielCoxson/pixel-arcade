@@ -13,8 +13,7 @@ export default function MinesweeperCell(props: any) {
 
     function handleClick() {
         if (state === State.Flagged) return;
-        if (visible) clearCell(row, col, true);
-        else clearCell(row, col, false);
+        clearCell(row, col);
     }
     
     function handleRightClick() {
