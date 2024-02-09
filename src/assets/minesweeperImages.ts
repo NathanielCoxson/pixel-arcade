@@ -9,11 +9,10 @@ import eight from './minesweeper-eight.svg';
 import covered from './minesweeper-covered.svg';
 import mine from './minesweeper-mine.svg';
 import empty from './minesweeper-empty.svg';
+import flag from './minesweeper-flag.svg';
+import unknown from './minesweeper-unknown.svg';
 
-export const minesweeperImages = {
-    covered,
-    mine,
-    empty,
+export const images = {
     one,
     two,
     three,
@@ -22,4 +21,15 @@ export const minesweeperImages = {
     six,
     seven,
     eight,
-};
+    empty,
+    covered,
+    unknown,
+    flag,
+    mine,
+}
+
+export function getImageSrc(value: number): typeof one {
+    if (value === -1) return mine;
+    const numerical = [empty, one, two, three, four, five, six, seven, eight];
+    return numerical[value];
+} 
