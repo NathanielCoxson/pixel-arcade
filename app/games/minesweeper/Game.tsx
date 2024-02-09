@@ -60,7 +60,6 @@ export default function Game() {
     */
     function endGame(win: boolean, numCleared: number) {
         if (!gameRunning) return;
-        console.log(win);
         if (win) {
             setGameWon(true);
         }
@@ -79,6 +78,7 @@ export default function Game() {
         if (firstMove) setFirstMove(false);
 
         const { numCleared, success } = utils.clearFromCell(row, col, newBoard);
+        console.log(numCleared);
 
         setBoard(newBoard);
         
@@ -89,7 +89,6 @@ export default function Game() {
             endGame(true, numCleared);
         }
         setClearedCellsCount(prev => prev + numCleared);
-
     }
 
     function flagCell(row: number, col: number) {
