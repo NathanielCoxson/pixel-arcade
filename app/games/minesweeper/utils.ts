@@ -166,12 +166,12 @@ export function clearFromCell(row: number, col: number, board: Cell[][]): { numC
     // Show starting cell
     board[row][col] = { ...board[row][col], state: State.Visible };
     // Check starting cell
-    if (board[row][col].value === -1) return { numCleared: 0, success: false };
+    if (board[row][col].value === -1) return { numCleared, success: false };
 
     // Return early if adjacent clearing isn't safe
     const numFlags = calcualteAdjacentFlags(row, col, board);
     const safeToClear = (board[row][col].value - numFlags) <= 0;
-    if (!safeToClear) return { numCleared: 1, success: true };
+    if (!safeToClear) return { numCleared, success: true };
 
     q.push([row, col]);
     while (q.length > 0) {
