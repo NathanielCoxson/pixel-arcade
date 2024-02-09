@@ -13,12 +13,12 @@ export default function Testing() {
 
     const { data: session } = useSession();
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
-    const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameWon, setGameWon] = useState<boolean>(false);
     const [gameLost, setGameLost] = useState<boolean>(false);
     const [gameRunning, setGameRunning] = useState<boolean>(false);
     const [seconds, setSeconds] = useState<number>(0);
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
+    const [numFlags, setNumFlags] = useState<number>(0);
 
     // Timer interval
     useEffect(() => {
@@ -42,13 +42,15 @@ export default function Testing() {
         if (!success) {
             setGameLost(true);
             setGameRunning(false);
-            setGameOver(true);
             return;
         }
     }
 
     function flagCell(row: number, col: number) {
-        console.log("Flagged:", row, col);
+        // Update flag count
+        if (board[row][col].state !== State.Flagged) setNumFlags(prev => prev + 1);
+        else setNumFlags(prev => prev - 1);
+
         const newBoard = [...board];
         const currentState = newBoard[row][col].state;
         const state = currentState === State.Flagged ? State.Covered : State.Flagged;
@@ -57,11 +59,12 @@ export default function Testing() {
     }
 
     function playGame() {
-        setGameOver(false);
         setGameWon(false);
         setGameLost(false);
         setGameRunning(true);
         setClearedCellsCount(0);
+        setNumFlags(0);
+        setSeconds(0);
 
         const emptyBoard = [...board];
         for (let row = 0; row < emptyBoard.length; row++) {
@@ -78,7 +81,7 @@ export default function Testing() {
             <section className="flex flex-col gap-4">
                 <div className="flex gap-4">
                     <h2>Cleared: {clearedCellsCount}</h2>
-                    {/*<h2>Mines: {NUM_MINES - numFlags}</h2>*/}
+                    <h2>Mines: {NUM_MINES - numFlags >= 0 ? NUM_MINES - numFlags : 0}</h2>
                     <h2>Time: {Math.floor((seconds / (60 * 60)) % 24)}:{Math.floor((seconds / 60) % 60)}:{seconds % 60}</h2>
                 </div>
                 {/* Notification Overlays */}
