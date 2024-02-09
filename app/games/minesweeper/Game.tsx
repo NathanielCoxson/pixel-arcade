@@ -123,8 +123,6 @@ export default function Game() {
         setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     }
 
-    useEffect(() => console.log(board), [board]);
-
     return (
         <section className="flex flex-col gap-4">
             <div className="flex gap-4">
