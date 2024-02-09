@@ -3,7 +3,7 @@
 import { getImageSrc, images } from "@/src/assets/minesweeperImages"
 import Image from "next/image"
 import { useEffect, useState } from "react";
-import { State } from "../testing/utils";
+import { State } from "../../src/lib/utils";
 
 export default function MinesweeperCell(props: any) {
     const { value, state, clearCell, row, col, flagCell } = props;

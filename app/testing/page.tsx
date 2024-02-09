@@ -1,15 +1,16 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useTransition } from "react"
-import { Cell, State } from "./utils";
+import { useEffect, useState } from "react"
+import { Cell, State } from "../../src/lib/utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
-import * as utils from './utils';
+import * as utils from '../../src/lib/utils';
+
+const ROWS = 10;
+const COLS = 10;
+const NUM_MINES = 25;
 
 export default function Testing() {
-    const ROWS = 10;
-    const COLS = 10;
-    const NUM_MINES = 25;
 
     const { data: session } = useSession();
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
@@ -19,6 +20,7 @@ export default function Testing() {
     const [seconds, setSeconds] = useState<number>(0);
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
+    const [firstMove, setFirstMove] = useState<boolean>(true);
 
     // Timer interval
     useEffect(() => {
@@ -30,9 +32,13 @@ export default function Testing() {
 
         return () => clearInterval(timerInterval);
     }, [gameRunning]);
-    
+
     function clearCell(row: number, col: number) {
-        const newBoard = [...board];
+        let newBoard: Cell[][] = [];
+
+        if (firstMove && board[row][col].value === -1) newBoard = utils.getSafeBoard(board, row, col, ROWS, COLS, NUM_MINES); 
+        else newBoard = [...board];
+        if (firstMove) setFirstMove(false);
 
         const { numCleared, success } = utils.clearFromCell(row, col, newBoard);
 
@@ -65,6 +71,7 @@ export default function Testing() {
         setClearedCellsCount(0);
         setNumFlags(0);
         setSeconds(0);
+        setFirstMove(true);
 
         const emptyBoard = [...board];
         for (let row = 0; row < emptyBoard.length; row++) {
@@ -75,6 +82,8 @@ export default function Testing() {
         setBoard([]);
         setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     }
+
+    useEffect(() => console.log(board), [board]);
 
     return (
         <main className="flex h-screen min-h-screen flex-col items-center px-24 py-12 gap-2">

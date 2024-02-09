@@ -26,6 +26,10 @@ export function getShuffledArray(arr: number[]): number[] {
     return arr;
 }
 
+function getEmptyBoard(rows: number, cols: number) {
+    return Array.from({ length: cols }, () => Array(rows).fill(0));
+}
+
 /**
  * Returns a matrix of dimensions numRows X numCols
  * with numMines number of mines.
@@ -35,15 +39,16 @@ export function getShuffledArray(arr: number[]): number[] {
  * @returns {number[][]} the mine matrix
  */
 export function getMineBoard(numRows: number, numCols: number, numMines: number): number[][] {
-    const mineBoard = Array.from({ length: numRows }, () => Array(numCols).fill(0));
+    const mineBoard = getEmptyBoard(numRows, numCols);
+
     const totalPixels = numRows * numCols;
     const positions = Array.from({ length: totalPixels }, (_, index) => index);
     const minePositions = getShuffledArray(positions).slice(0, numMines);
 
     for (let pos of minePositions) {
-        const row = Math.floor(pos / numCols);
-        const col = pos % numCols;
-        mineBoard[row][col] = -1; 
+        const r = Math.floor(pos / numCols);
+        const c = pos % numCols;
+        mineBoard[r][c] = -1; 
     }
 
     return mineBoard;
@@ -90,6 +95,54 @@ export function getFilledBoard(rows: number, cols: number, numMines: number): Ce
                 continue;
             }
             filledBoard[row][col] = { ...filledBoard[row][col], value: calculateAdjacentMines(row, col, mineBoard) }
+        }
+    }
+
+    return filledBoard;
+}
+
+/**
+ * Returns a filled minesweeper board given the desired dimensions
+ * and number of mines to place and guarantees that position [row, col] 
+ * will not be a mine. 
+ * @param {Cell[][]} board
+ * @param {number} row
+ * @param {number} col
+ * @param {number} rows
+ * @param {number} cols
+ * @param {number} numMines
+ * @returns {Cell[][]} 
+ */
+export function getSafeBoard(board: Cell[][], row: number, col: number, rows: number, cols: number, numMines: number): Cell[][] {
+    const mineBoard = getEmptyBoard(rows, cols);
+    for (let i = 0; i < mineBoard.length; i++) {
+        for (let j = 0; j < mineBoard[i].length; j++) {
+            if (board[i][j].value === -1) mineBoard[i][j] = -1;
+        }
+    }
+
+    if (mineBoard[row][col] === -1) {
+        let minePlaced = false;
+        for (let i = 0; i < mineBoard.length; i++) {
+            for (let j = 0; j < mineBoard[i].length; j++) {
+                if (mineBoard[i][j] != -1 && !minePlaced) {
+                    mineBoard[i][j] = -1;
+                    minePlaced = true;
+                }
+            }
+        }
+        mineBoard[row][col] = 0;
+    }
+
+    const filledBoard: Cell[][] = Array.from({ length: rows }, () => Array(cols).fill({ value: 0, state: State.Covered }));
+
+    for (let i = 0; i < mineBoard.length; i++) {
+        for (let j = 0; j < mineBoard[i].length; j++) {
+            if (mineBoard[i][j] === -1) {
+                filledBoard[i][j] = { ...filledBoard[i][j], value: -1 };
+                continue;
+            }
+            filledBoard[i][j] = { ...filledBoard[i][j], value: calculateAdjacentMines(i, j, mineBoard) }
         }
     }
 
@@ -176,8 +229,4 @@ export function calcualteAdjacentFlags(row: number, col: number, board: Cell[][]
         if (flagged) count++;
     }
     return count;
-}
-
-export function clearCellsRecursively(row: number, col: number, board: Cell[][]) {
-
 }
