@@ -78,7 +78,6 @@ export default function Game() {
         if (firstMove) setFirstMove(false);
 
         const { numCleared, success } = utils.clearFromCell(row, col, newBoard);
-        console.log(numCleared);
 
         setBoard(newBoard);
         
