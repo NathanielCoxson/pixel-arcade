@@ -56,7 +56,7 @@ export default function MinesweeperCell(props: any) {
                 draggable={false}
             />
             
-            {(!visible || !cellValue) && <Image 
+            {(!visible || typeof(cellValue) !== 'number') && <Image 
                 src={images.covered} 
                 fill={true} alt="Minesweeper empty cell" 
                 priority={true}

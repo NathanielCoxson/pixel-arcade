@@ -1,7 +1,9 @@
 'use client';
 import MinesweeperCell from "../components/MinesweeperCell"
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react"
 import { Cell, State } from "./utils";
+import { createMinesweeperScore } from "@/src/lib/actions";
 import * as utils from './utils';
 
 export default function Testing() {
@@ -9,10 +11,24 @@ export default function Testing() {
     const COLS = 10;
     const NUM_MINES = 25;
 
+    const { data: session } = useSession();
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameWon, setGameWon] = useState<boolean>(false);
     const [gameLost, setGameLost] = useState<boolean>(false);
+    const [gameRunning, setGameRunning] = useState<boolean>(false);
+    const [seconds, setSeconds] = useState<number>(0);
+
+    // Timer interval
+    useEffect(() => {
+        let timerInterval: ReturnType<typeof setInterval>;
+
+        if (gameRunning) {
+            timerInterval = setInterval(() => setSeconds(prev => prev + 1), 1000);
+        }
+
+        return () => clearInterval(timerInterval);
+    }, [gameRunning]);
     
     function clearCell(row: number, col: number, clearAdjacent: boolean) {
         console.log("Clearing:", row, col);
@@ -41,6 +57,7 @@ export default function Testing() {
         setGameOver(false);
         setGameWon(false);
         setGameLost(false);
+        setGameRunning(true);
 
         const emptyBoard = [...board];
         for (let row = 0; row < emptyBoard.length; row++) {
