@@ -11,6 +11,8 @@ import mine from './minesweeper-mine.svg';
 import empty from './minesweeper-empty.svg';
 import flag from './minesweeper-flag.svg';
 import unknown from './minesweeper-unknown.svg';
+import gameOver from './game_over.svg';
+import gameWon from './game_won.svg';
 
 export const images = {
     one,
@@ -26,6 +28,8 @@ export const images = {
     unknown,
     flag,
     mine,
+    gameOver,
+    gameWon,
 }
 
 export function getImageSrc(value: number): typeof one {

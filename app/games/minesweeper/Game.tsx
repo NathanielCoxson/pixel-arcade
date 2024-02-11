@@ -4,11 +4,15 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react"
 import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
+import { images } from "@/src/assets/minesweeperImages";
 import * as utils from './utils';
+import Image from "next/image";
 
 const ROWS = 10;
 const COLS = 10;
 const NUM_MINES = 25;
+const game_over_image = images.gameOver;
+const game_won_image = images.gameWon;
 
 export default function Game() {
 
@@ -128,22 +132,41 @@ export default function Game() {
                 <h2>Mines: {NUM_MINES - numFlags >= 0 ? NUM_MINES - numFlags : 0}</h2>
                 <h2>Time: {Math.floor((seconds / (60 * 60)) % 24)}:{Math.floor((seconds / 60) % 60)}:{seconds % 60}</h2>
             </div>
-            {/* Notification Overlays */}
-            {/* Game Won */}
-            {gameWon && <div className="absolute z-10 min-w-game-width min-h-game-height">
-                {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-black text-3xl font-bold p-4 bg-white/75 rounded-full">
-                    You Win!
-                </h2>}
-            </div>}
-            {/* Game Over */}
-            {gameLost && <div className="absolute z-10 min-w-game-width min-h-game-height">
-                {<h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-black text-3xl font-bold p-4 bg-white/75 rounded-full">
-                    Game Over
-                </h2>}
-            </div>}
+            
 
             {/* Game Board */}
             <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height">
+                {/* Notification Overlays */}
+                {/* Game Won */}
+                {gameWon && <div className="absolute flex flex-col items-center justify-center z-10 min-w-game-width min-h-game-height">
+                    <div className="absolute w-3/4 h-1/4 z-20 flex justify-center items-center">
+                        <Image
+                            src={game_won_image}
+                            fill={true}
+                            objectFit="contain"
+                            priority={true}
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
+                            alt="Game won notification"
+                        />
+                    </div>
+                </div>}
+                {/* Game Over */}
+                {gameLost && <div className="absolute flex flex-col items-center justify-center z-10 min-w-game-width min-h-game-height">
+                    <div className="absolute w-3/4 h-1/4 z-20 flex justify-center items-center">
+                        <Image
+                            src={game_over_image}
+                            fill={true}
+                            objectFit="contain"
+                            priority={true}
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
+                            alt="Game won notification"
+                        />
+                    </div>
+                </div>}
+
+                {/* Board */}
                 {board.map((row: Cell[], i: number) => {
                     return row.map((value: Cell, j: number) => {
                         return <div
