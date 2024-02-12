@@ -7,11 +7,12 @@ import { createMinesweeperScore } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
 import * as utils from './utils';
 import Image from "next/image";
+import NotificationOverlay from "@/app/components/NotificationOverlay";
 
 const ROWS = 10;
 const COLS = 10;
 const NUM_MINES = 25;
-const game_over_image = images.gameOver;
+const game_lost_image = images.gameOver;
 const game_won_image = images.gameWon;
 
 export default function Game() {
@@ -137,34 +138,8 @@ export default function Game() {
             {/* Game Board */}
             <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height">
                 {/* Notification Overlays */}
-                {/* Game Won */}
-                {gameWon && <div className="absolute flex flex-col items-center justify-center z-10 min-w-game-width min-h-game-height">
-                    <div className="absolute w-3/4 h-1/4 z-20 flex justify-center items-center">
-                        <Image
-                            src={game_won_image}
-                            fill={true}
-                            objectFit="contain"
-                            priority={true}
-                            onContextMenu={(e) => e.preventDefault()}
-                            draggable={false}
-                            alt="Game won notification"
-                        />
-                    </div>
-                </div>}
-                {/* Game Over */}
-                {gameLost && <div className="absolute flex flex-col items-center justify-center z-10 min-w-game-width min-h-game-height">
-                    <div className="absolute w-3/4 h-1/4 z-20 flex justify-center items-center">
-                        <Image
-                            src={game_over_image}
-                            fill={true}
-                            objectFit="contain"
-                            priority={true}
-                            onContextMenu={(e) => e.preventDefault()}
-                            draggable={false}
-                            alt="Game won notification"
-                        />
-                    </div>
-                </div>}
+                <NotificationOverlay src={game_won_image} visible={gameWon} /> {/* Game Won */}
+                <NotificationOverlay src={game_lost_image} visible={gameLost} /> {/* Game Lost */}
 
                 {/* Board */}
                 {board.map((row: Cell[], i: number) => {
