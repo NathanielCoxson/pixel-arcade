@@ -135,30 +135,32 @@ export default function Game() {
             </div>
             
 
-            {/* Game Board */}
-            <div className="grid grid-cols-equal-10 grid-rows-equal-10 min-w-game-width min-h-game-height">
+            {/* Game Board Container */}
+            <div className="relative min-w-game-width min-h-game-height">
                 {/* Notification Overlays */}
                 <NotificationOverlay src={game_won_image} visible={gameWon} /> {/* Game Won */}
                 <NotificationOverlay src={game_lost_image} visible={gameLost} /> {/* Game Lost */}
 
                 {/* Board */}
-                {board.map((row: Cell[], i: number) => {
-                    return row.map((value: Cell, j: number) => {
-                        return <div
-                            key={`${i}-${j}`}
-                            className="relative max-h-full max-w-full flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
-                        >
-                            <MinesweeperCell
-                                value={board[i][j].value}
-                                clearCell={clearCell}
-                                flagCell={flagCell}
-                                state={board[i][j].state}
-                                row={i}
-                                col={j}
-                            />
-                        </div>
-                    })
-                })}
+                <div className="w-full h-full grid grid-cols-equal-10 grid-rows-equal-10">
+                    {board.map((row: Cell[], i: number) => {
+                        return row.map((value: Cell, j: number) => {
+                            return <div
+                                key={`${i}-${j}`}
+                                className="relative max-h-full max-w-full flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
+                            >
+                                <MinesweeperCell
+                                    value={board[i][j].value}
+                                    clearCell={clearCell}
+                                    flagCell={flagCell}
+                                    state={board[i][j].state}
+                                    row={i}
+                                    col={j}
+                                />
+                            </div>
+                        })
+                    })}
+                </div>
             </div>
 
             {/* Controls */}
