@@ -1,7 +1,7 @@
 'use client';
 import MinesweeperCell from "../../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
@@ -26,6 +26,9 @@ export default function Game() {
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [firstMove, setFirstMove] = useState<boolean>(true);
+    const [heightIsLarger, setHeightIsLarger] = useState<boolean>(false);
+    const [widthIsLarger, setWidthIsLarger] = useState<boolean>(true);
+    const boardContainerRef = useRef(null);
 
     // Timer interval
     useEffect(() => {
@@ -126,8 +129,9 @@ export default function Game() {
         setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     }
 
+
     return (
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 justify-center items-center h-full w-full">
             <div className="flex gap-4">
                 <h2>Cleared: {clearedCellsCount}</h2>
                 <h2>Mines: {NUM_MINES - numFlags >= 0 ? NUM_MINES - numFlags : 0}</h2>
@@ -136,18 +140,18 @@ export default function Game() {
             
 
             {/* Game Board Container */}
-            <div className="relative min-w-game-width min-h-game-height">
+           <div className="relative w-full max-w-[75vh] after:pb-[100%] after:content-[''] after:block overflow-hidden" >
                 {/* Notification Overlays */}
-                <NotificationOverlay src={game_won_image} visible={gameWon} /> {/* Game Won */}
-                <NotificationOverlay src={game_lost_image} visible={gameLost} /> {/* Game Lost */}
+                <NotificationOverlay src={game_won_image} visible={gameWon} />
+                <NotificationOverlay src={game_lost_image} visible={gameLost} />
 
                 {/* Board */}
-                <div className="w-full h-full grid grid-cols-equal-10 grid-rows-equal-10">
+                <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
                     {board.map((row: Cell[], i: number) => {
                         return row.map((value: Cell, j: number) => {
                             return <div
                                 key={`${i}-${j}`}
-                                className="relative max-h-full max-w-full flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
+                                className="relative flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
                             >
                                 <MinesweeperCell
                                     value={board[i][j].value}

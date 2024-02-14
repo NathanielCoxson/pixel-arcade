@@ -27,6 +27,9 @@ const config: Config = {
       minHeight: {
         'game-height': '720px'
       },
+      maxWidth: {
+        'game-width': '720px'
+      }
     }, 
   },
   plugins: [],
