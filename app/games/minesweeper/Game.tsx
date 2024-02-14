@@ -28,6 +28,7 @@ export default function Game() {
     const [firstMove, setFirstMove] = useState<boolean>(true);
     const [heightIsLarger, setHeightIsLarger] = useState<boolean>(false);
     const [widthIsLarger, setWidthIsLarger] = useState<boolean>(true);
+    const boardContainerRef = useRef(null);
 
     // Timer interval
     useEffect(() => {
@@ -39,29 +40,6 @@ export default function Game() {
 
         return () => clearInterval(timerInterval);
     }, [gameRunning]);
-
-    /*
-    Window resize event listener. Used to set board
-    to full height or full width depending on which is smaller.
-    This way, the aspect ratio remains 1:1 without causing overflow.
-    */
-    useEffect(() => {
-        // TODO Check parent container instead and manually set width and height to the min
-        // of the parent's available width and height.
-        function onResize(e: any) {
-            const { innerWidth, innerHeight } = e.target;
-            if (innerHeight > innerWidth) {
-                setHeightIsLarger(true);
-                setWidthIsLarger(false);
-            } else {
-                setHeightIsLarger(false);
-                setWidthIsLarger(true);
-            }
-        }
-
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
 
     /**
      * Saves the game score 
@@ -162,10 +140,10 @@ export default function Game() {
             
 
             {/* Game Board Container */}
-            {widthIsLarger && <div className="relative h-full aspect-square">
+           <div className="relative w-full max-w-[75vh] after:pb-[100%] after:content-[''] after:block overflow-hidden" >
                 {/* Notification Overlays */}
-                <NotificationOverlay src={game_lost_image} visible={gameLost} />
                 <NotificationOverlay src={game_won_image} visible={gameWon} />
+                <NotificationOverlay src={game_lost_image} visible={gameLost} />
 
                 {/* Board */}
                 <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
@@ -187,33 +165,7 @@ export default function Game() {
                         })
                     })}
                 </div>
-            </div>}
-            {heightIsLarger && <div className="relative  w-full aspect-square">
-                {/* Notification Overlays */}
-                <NotificationOverlay src={game_lost_image} visible={gameLost} />
-                <NotificationOverlay src={game_won_image} visible={gameWon} />
-
-                {/* Board */}
-                <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
-                    {board.map((row: Cell[], i: number) => {
-                        return row.map((value: Cell, j: number) => {
-                            return <div
-                                key={`${i}-${j}`}
-                                className="relative flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
-                            >
-                                <MinesweeperCell
-                                    value={board[i][j].value}
-                                    clearCell={clearCell}
-                                    flagCell={flagCell}
-                                    state={board[i][j].state}
-                                    row={i}
-                                    col={j}
-                                />
-                            </div>
-                        })
-                    })}
-                </div>
-            </div>}
+            </div>
 
             {/* Controls */}
             <div className="flex gap-4 items-center">
