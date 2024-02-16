@@ -6,8 +6,14 @@ import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
 import * as utils from './utils';
-import Image from "next/image";
 import NotificationOverlay from "@/app/components/NotificationOverlay";
+import GameOverlay from "@/app/components/GameOverlay";
+
+enum Difficulty {
+    Easy,
+    Medium,
+    Hard
+}
 
 const ROWS = 10;
 const COLS = 10;
@@ -15,20 +21,25 @@ const NUM_MINES = 25;
 const game_lost_image = images.gameOver;
 const game_won_image = images.gameWon;
 
+
 export default function Game() {
 
+    // Session
     const { data: session } = useSession();
+    // Board
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
+    const [rows, setRows] = useState<number>(ROWS);
+    const [cols, setCols] = useState<number>(COLS);
+    const [numMines, setNumMines] = useState<number>(NUM_MINES);
+    const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
+    // Game state
     const [gameWon, setGameWon] = useState<boolean>(false);
     const [gameLost, setGameLost] = useState<boolean>(false);
-    const [gameRunning, setGameRunning] = useState<boolean>(true);
+    const [gameRunning, setGameRunning] = useState<boolean>(false);
     const [seconds, setSeconds] = useState<number>(0);
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [firstMove, setFirstMove] = useState<boolean>(true);
-    const [heightIsLarger, setHeightIsLarger] = useState<boolean>(false);
-    const [widthIsLarger, setWidthIsLarger] = useState<boolean>(true);
-    const boardContainerRef = useRef(null);
 
     // Timer interval
     useEffect(() => {
@@ -41,6 +52,42 @@ export default function Game() {
         return () => clearInterval(timerInterval);
     }, [gameRunning]);
 
+    // Difficulty change effect
+    useEffect(() => {
+        // Update board state
+        let newRows: number;
+        let newCols: number;
+        let newNumMines: number;
+        switch (difficulty) {
+            case Difficulty.Easy:
+                newRows = 10, newCols = 10, newNumMines = 25;
+                break;
+            case Difficulty.Medium:
+                newRows = 15, newCols = 15, newNumMines = 35;
+                break;
+            case Difficulty.Hard:
+                newRows = 20, newCols = 20, newNumMines = 45;
+                break;
+            default:
+                newRows = 10, newCols = 10, newNumMines = 25;
+                break;
+        }
+        setRows(newRows);
+        setCols(newCols);
+        setNumMines(newNumMines);
+        setBoard([]);
+        setBoard(utils.getFilledBoard(newRows, newCols, newNumMines));
+
+        // Reset game state
+        setGameWon(false);
+        setGameLost(false);
+        setGameRunning(true);
+        setClearedCellsCount(0);
+        setNumFlags(0);
+        setSeconds(0);
+        setFirstMove(true);
+    }, [difficulty]);
+
     /**
      * Saves the game score 
      * @param {boolean} win 
@@ -51,11 +98,11 @@ export default function Game() {
         const newScore = {
             uid: session?.user?.id,
             time: seconds,
-            numMines: NUM_MINES,
+            numMines: numMines,
             win: win,
             numCleared: clearedCellsCount + numCleared,
-            numRows: ROWS,
-            numCols: COLS,
+            numRows: rows,
+            numCols: cols,
         };
         await createMinesweeperScore(newScore);
     }
@@ -79,9 +126,11 @@ export default function Game() {
     }
 
     function clearCell(row: number, col: number) {
+        if (!gameRunning) setGameRunning(true);
+
         let newBoard: Cell[][] = [];
 
-        if (firstMove && board[row][col].value === -1) newBoard = utils.getSafeBoard(board, row, col, ROWS, COLS, NUM_MINES); 
+        if (firstMove && board[row][col].value === -1) newBoard = utils.getSafeBoard(board, row, col, rows, cols, numMines); 
         else newBoard = [...board];
         if (firstMove) setFirstMove(false);
 
@@ -92,7 +141,7 @@ export default function Game() {
         if (!success) {
             endGame(false, numCleared);
         } 
-        else if (numCleared + clearedCellsCount === (ROWS * COLS) - NUM_MINES) {
+        else if (numCleared + clearedCellsCount === (rows * cols) - numMines) {
             endGame(true, numCleared);
         }
         setClearedCellsCount(prev => prev + numCleared);
@@ -126,7 +175,7 @@ export default function Game() {
             }
         }
         setBoard([]);
-        setBoard(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
+        setBoard(utils.getFilledBoard(rows, cols, numMines));
     }
 
 
@@ -134,7 +183,7 @@ export default function Game() {
         <section className="flex flex-col gap-4 justify-center items-center h-full w-full">
             <div className="flex gap-4">
                 <h2>Cleared: {clearedCellsCount}</h2>
-                <h2>Mines: {NUM_MINES - numFlags >= 0 ? NUM_MINES - numFlags : 0}</h2>
+                <h2>Mines: {numMines - numFlags >= 0 ? numMines - numFlags : 0}</h2>
                 <h2>Time: {Math.floor((seconds / (60 * 60)) % 24)}:{Math.floor((seconds / 60) % 60)}:{seconds % 60}</h2>
             </div>
             
@@ -144,9 +193,15 @@ export default function Game() {
                 {/* Notification Overlays */}
                 <NotificationOverlay src={game_won_image} visible={gameWon} />
                 <NotificationOverlay src={game_lost_image} visible={gameLost} />
+                {/* Game paused/waiting to start overlay */}
+                {/* 
+                <GameOverlay visible={!gameRunning}>
+                    <button>Start</button>
+                </GameOverlay>
+                */}
 
                 {/* Board */}
-                <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
+                {difficulty === Difficulty.Easy && <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
                     {board.map((row: Cell[], i: number) => {
                         return row.map((value: Cell, j: number) => {
                             return <div
@@ -164,7 +219,45 @@ export default function Game() {
                             </div>
                         })
                     })}
-                </div>
+                </div>}
+                {difficulty === Difficulty.Medium && <div className="w-full h-full grid grid-rows-equal-15 grid-cols-equal-15">
+                    {board.map((row: Cell[], i: number) => {
+                        return row.map((value: Cell, j: number) => {
+                            return <div
+                                key={`${i}-${j}`}
+                                className="relative flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
+                            >
+                                <MinesweeperCell
+                                    value={board[i][j].value}
+                                    clearCell={clearCell}
+                                    flagCell={flagCell}
+                                    state={board[i][j].state}
+                                    row={i}
+                                    col={j}
+                                />
+                            </div>
+                        })
+                    })}
+                </div>}
+                {difficulty === Difficulty.Hard && <div className="w-full h-full grid grid-rows-equal-20 grid-cols-equal-20">
+                    {board.map((row: Cell[], i: number) => {
+                        return row.map((value: Cell, j: number) => {
+                            return <div
+                                key={`${i}-${j}`}
+                                className="relative flex flex-wrap cursor-pointer text-center justify-center content-center select-none"
+                            >
+                                <MinesweeperCell
+                                    value={board[i][j].value}
+                                    clearCell={clearCell}
+                                    flagCell={flagCell}
+                                    state={board[i][j].state}
+                                    row={i}
+                                    col={j}
+                                />
+                            </div>
+                        })
+                    })}
+                </div>}
             </div>
 
             {/* Controls */}
@@ -177,6 +270,11 @@ export default function Game() {
                 >
                     Play
                 </button>
+                <select onChange={(e) => setDifficulty(Number(e.target.value))}>
+                    <option value={Difficulty.Easy}>Easy</option>
+                    <option value={Difficulty.Medium}>Medium</option>
+                    <option value={Difficulty.Hard}>Hard</option>
+                </select>
             </div>
         </section>
     )
