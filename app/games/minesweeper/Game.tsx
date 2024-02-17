@@ -1,7 +1,7 @@
 'use client';
 import MinesweeperCell from "../../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, SyntheticEvent } from "react"
 import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
@@ -40,14 +40,14 @@ export default function Game() {
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [firstMove, setFirstMove] = useState<boolean>(true);
+    const [selectingDifficulty, setSelectingDifficulty] = useState<boolean>(false);
+    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
 
     // Timer interval
     useEffect(() => {
-        let timerInterval: ReturnType<typeof setInterval>;
+        if (!gameRunning) return;
 
-        if (gameRunning) {
-            timerInterval = setInterval(() => setSeconds(prev => prev + 1), 1000);
-        }
+        let timerInterval: ReturnType<typeof setInterval> = setInterval(() => setSeconds(prev => prev + 1), 1000);
 
         return () => clearInterval(timerInterval);
     }, [gameRunning]);
@@ -81,7 +81,7 @@ export default function Game() {
         // Reset game state
         setGameWon(false);
         setGameLost(false);
-        setGameRunning(true);
+        setGameRunning(false);
         setClearedCellsCount(0);
         setNumFlags(0);
         setSeconds(0);
@@ -162,7 +162,7 @@ export default function Game() {
     function playGame() {
         setGameWon(false);
         setGameLost(false);
-        setGameRunning(true);
+        setGameRunning(false);
         setClearedCellsCount(0);
         setNumFlags(0);
         setSeconds(0);
@@ -178,6 +178,13 @@ export default function Game() {
         setBoard(utils.getFilledBoard(rows, cols, numMines));
     }
 
+    function handleDifficultySelectSubmit(e: SyntheticEvent) {
+        e.preventDefault();
+
+        setDifficulty(selectedDifficulty);
+
+        setSelectingDifficulty(false);
+    }
 
     return (
         <section className="flex flex-col gap-4 justify-center items-center h-full w-full">
@@ -194,11 +201,54 @@ export default function Game() {
                 <NotificationOverlay src={game_won_image} visible={gameWon} />
                 <NotificationOverlay src={game_lost_image} visible={gameLost} />
                 {/* Game paused/waiting to start overlay */}
-                {/* 
-                <GameOverlay visible={!gameRunning}>
-                    <button>Start</button>
+                <GameOverlay visible={selectingDifficulty}>
+                    <div className="flex flex-col items-center justify-top bg-slate-200 w-1/2 h-1/2 p-10">
+                        <h1>Select Difficulty:</h1>
+                        <form onSubmit={handleDifficultySelectSubmit} className="flex flex-col">
+                            <div className="flex flex-col justify-between">
+                                <fieldset>
+                                    <div className="flex gap-4 justify-between">
+                                        <label htmlFor="difficulty-easy">Easy</label>
+                                        <div className="flex gap-4">
+                                            <p>10x10, 25 Mines</p>
+                                            <input
+                                                type="radio"
+                                                name="difficulty"
+                                                value={Difficulty.Easy}
+                                                onChange={(e) => setSelectedDifficulty(Number(e.target.value))}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 justify-between">
+                                        <label htmlFor="difficulty-medium">Medium</label>
+                                        <div className="flex gap-4">
+                                            <p>15x15, 35 Mines</p>
+                                            <input
+                                                type="radio"
+                                                name="difficulty"
+                                                value={Difficulty.Medium}
+                                                onChange={(e) => setSelectedDifficulty(Number(e.target.value))}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 justify-between">
+                                        <label htmlFor="difficulty-hard">Hard</label>
+                                        <div className="flex gap-4">
+                                            <p>20x20, 45 Mines</p>
+                                            <input
+                                                type="radio"
+                                                name="difficulty"
+                                                value={Difficulty.Hard}
+                                                onChange={(e) => setSelectedDifficulty(Number(e.target.value))}
+                                            />
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <button type="submit" className="hover:font-semibold transition-all">Submit</button>
+                        </form>
+                    </div>
                 </GameOverlay>
-                */}
 
                 {/* Board */}
                 {difficulty === Difficulty.Easy && <div className="w-full h-full grid grid-rows-equal-10 grid-cols-equal-10">
@@ -265,10 +315,16 @@ export default function Game() {
                 {/* TODO Add controls here like reset etc, and add styling to make it appear more like a control bar*/}
                 <h3 className="font-semibold">Controls:</h3>
                 <button
-                    className="border border-black p-1 hover:bg-green-400"
+                    className="border border-black p-1 hover:bg-slate-300"
                     onClick={playGame}
                 >
                     Play
+                </button>
+                <button
+                    className="border border-black p-1 hover:bg-slate-300"
+                    onClick={(e) => setSelectingDifficulty(prev => !prev)}
+                >
+                    Settings
                 </button>
                 <select onChange={(e) => setDifficulty(Number(e.target.value))}>
                     <option value={Difficulty.Easy}>Easy</option>
