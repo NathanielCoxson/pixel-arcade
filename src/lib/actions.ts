@@ -211,7 +211,6 @@ export async function getMinesweeperLeaderboard() {
             },
             take: 10
         });
-        console.log(easy);
         return { easy, medium, hard };
     } catch (error) {
         console.log(error);
