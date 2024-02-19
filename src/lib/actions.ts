@@ -149,3 +149,72 @@ export async function getSnakeScores(uid: string | undefined) {
         throw error;
     }
 }
+
+/**
+ * Returns an object containing the top 10 minesweeper scores
+ * for each difficulty, sorted by time from least to greatest.
+ * Type will be: {
+ *  easy: [
+ *      {
+ *          id: '498a09a7-ff29-4638-bebc-ffd67453074f',
+ *          uid: 'e9e96001-75ec-4b53-82d1-861700a29159',
+ *          time: 82,
+ *          numMines: 25,
+ *          timestamp: 2024-02-09T11:24:38.050Z,
+ *          win: true,
+ *          numCleared: 75,
+ *          numRows: 10,
+ *          numCols: 10,
+ *          users: {
+ *          id: 'e9e96001-75ec-4b53-82d1-861700a29159',
+ *          username: 'ncoxson',
+ *          password: '$2b$12$0e3Qb2RwGf13LVn4/L.xj.m7btIj2Dpx6./qi2kkPT5nViLdlNegG'
+ *      }
+ *  ],
+ *  medium: [],
+ *  hard: [],
+ * }
+ */
+export async function getMinesweeperLeaderboard() {
+    try {
+        // TODO Change numMines to new difficulty identifier when database schema is changed.
+        const easy = await prisma.minesweeperScores.findMany({
+            where: {
+                win: true,
+                numMines: 25,
+            },
+            orderBy: [{ time: 'asc' }],
+            include: {
+                users: true
+            },
+            take: 10
+        });
+        const medium = await prisma.minesweeperScores.findMany({
+            where: {
+                win: true,
+                numMines: 35,
+            },
+            orderBy: [{ time: 'asc' }],
+            include: {
+                users: true
+            },
+            take: 10
+        });
+        const hard = await prisma.minesweeperScores.findMany({
+            where: {
+                win: true,
+                numMines: 45,
+            },
+            orderBy: [{ time: 'asc' }],
+            include: {
+                users: true
+            },
+            take: 10
+        });
+        console.log(easy);
+        return { easy, medium, hard };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
