@@ -1,9 +1,9 @@
 'use client';
 import MinesweeperCell from "../../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useRef, SyntheticEvent, useTransition } from "react"
+import { useEffect, useState, SyntheticEvent } from "react"
 import { Cell, State } from "./utils";
-import { createMinesweeperScore } from "@/src/lib/actions";
+import { createMinesweeperScore, getMinesweeperLeaderboard } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
 import * as utils from './utils';
 import NotificationOverlay from "@/app/components/NotificationOverlay";
@@ -31,6 +31,7 @@ export default function Game() {
 
     // Session
     const { data: session } = useSession();
+    const [leaderboard, setLeaderboard] = useState<any>(null);
     // Board
     const [board, setBoard] = useState<Cell[][]>(utils.getFilledBoard(ROWS, COLS, NUM_MINES));
     const [rows, setRows] = useState<number>(ROWS);
@@ -49,6 +50,15 @@ export default function Game() {
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [firstMove, setFirstMove] = useState<boolean>(true);
+
+    // Get leaderboard data
+    useEffect(() => {
+        async function getLeaderboardData() {
+            const leaderboardData = await getMinesweeperLeaderboard();
+            setLeaderboard(leaderboardData);
+        }
+        getLeaderboardData();
+    }, []);
 
     // Timer interval
     useEffect(() => {
@@ -215,14 +225,44 @@ export default function Game() {
                 <NotificationOverlay src={game_lost_image} visible={gameLost} />
                 {/* Leaderboard */}
                 <GameOverlay visible={currentMenu === MenuType.Leaderboard}>
-                    <div className="flex flex-col items-center bg-slate-200 w-1/2 h-1/2 p-10">
-                       <h1>{difficultyString} Leaderboard:</h1> 
+                    <div className="flex flex-col items-center justify-center bg-slate-200 w-1/2 h-1/2 p-10">
+                       <h1 className="font-semibold">{difficultyString} Leaderboard:</h1> 
+                       {leaderboard && difficulty === Difficulty.Easy && <ul className="overflow-y-auto">
+                            {leaderboard.easy?.map((entry: any) => 
+                                <li key={entry.id}>
+                                    <div className="flex gap-10">
+                                        <p>{entry.users.username}</p>
+                                        <p>{entry.time}s</p>
+                                    </div>
+                                </li>
+                            )} 
+                        </ul>}
+                       {leaderboard && difficulty === Difficulty.Medium && <ul className="overflow-y-auto">
+                            {leaderboard.medium?.map((entry: any) => 
+                                <li key={entry.id}>
+                                    <div className="flex gap-10">
+                                        <p>{entry.users.username}</p>
+                                        <p>{entry.time}s</p>
+                                    </div>
+                                </li>
+                            )} 
+                        </ul>}
+                       {leaderboard && difficulty === Difficulty.Hard && <ul className="overflow-y-auto">
+                            {leaderboard.hard?.map((entry: any) => 
+                                <li key={entry.id}>
+                                    <div className="flex gap-10">
+                                        <p>{entry.users.username}</p>
+                                        <p>{entry.time}s</p>
+                                    </div>
+                                </li>
+                            )} 
+                        </ul>}
                     </div>
                 </GameOverlay>
                 {/* Settings Overlay */}
                 <GameOverlay visible={currentMenu === MenuType.Settings}>
-                    <div className="flex flex-col items-center bg-slate-200 w-1/2 h-1/2 p-10">
-                        <h1>Select Difficulty:</h1>
+                    <div className="flex flex-col items-center justify-center bg-slate-200 w-1/2 h-1/2 p-10">
+                        <h1 className="font-semibold">Select Difficulty:</h1>
                         <form onSubmit={handleDifficultySelectSubmit} className="flex flex-col">
                             <div className="flex flex-col justify-between">
                                 <fieldset>
