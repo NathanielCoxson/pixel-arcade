@@ -1,7 +1,7 @@
 'use client';
 import MinesweeperCell from "../../components/MinesweeperCell"
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useRef, SyntheticEvent } from "react"
+import { useEffect, useState, useRef, SyntheticEvent, useTransition } from "react"
 import { Cell, State } from "./utils";
 import { createMinesweeperScore } from "@/src/lib/actions";
 import { images } from "@/src/assets/minesweeperImages";
@@ -13,6 +13,11 @@ enum Difficulty {
     Easy,
     Medium,
     Hard
+}
+enum MenuType {
+    Leaderboard,
+    Settings,
+    None,
 }
 
 const ROWS = 10;
@@ -32,6 +37,10 @@ export default function Game() {
     const [cols, setCols] = useState<number>(COLS);
     const [numMines, setNumMines] = useState<number>(NUM_MINES);
     const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
+    const [difficultyString, setDifficultyString] = useState<string>("Easy");
+    const [currentMenu, setCurrentMenu] = useState<MenuType>(MenuType.None);
+    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
+
     // Game state
     const [gameWon, setGameWon] = useState<boolean>(false);
     const [gameLost, setGameLost] = useState<boolean>(false);
@@ -40,8 +49,6 @@ export default function Game() {
     const [clearedCellsCount, setClearedCellsCount] = useState<number>(0);
     const [numFlags, setNumFlags] = useState<number>(0);
     const [firstMove, setFirstMove] = useState<boolean>(true);
-    const [selectingDifficulty, setSelectingDifficulty] = useState<boolean>(false);
-    const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(Difficulty.Easy);
 
     // Timer interval
     useEffect(() => {
@@ -58,18 +65,23 @@ export default function Game() {
         let newRows: number;
         let newCols: number;
         let newNumMines: number;
+        let newDifficultyString: string;
         switch (difficulty) {
             case Difficulty.Easy:
                 newRows = 10, newCols = 10, newNumMines = 25;
+                newDifficultyString = "Easy";
                 break;
             case Difficulty.Medium:
                 newRows = 15, newCols = 15, newNumMines = 35;
+                newDifficultyString = "Medium";
                 break;
             case Difficulty.Hard:
                 newRows = 20, newCols = 20, newNumMines = 45;
+                newDifficultyString = "Hard";
                 break;
             default:
                 newRows = 10, newCols = 10, newNumMines = 25;
+                newDifficultyString = "Easy";
                 break;
         }
         setRows(newRows);
@@ -77,6 +89,7 @@ export default function Game() {
         setNumMines(newNumMines);
         setBoard([]);
         setBoard(utils.getFilledBoard(newRows, newCols, newNumMines));
+        setDifficultyString(newDifficultyString);
 
         // Reset game state
         setGameWon(false);
@@ -183,7 +196,7 @@ export default function Game() {
 
         setDifficulty(selectedDifficulty);
 
-        setSelectingDifficulty(false);
+        setCurrentMenu(MenuType.None);
     }
 
     return (
@@ -200,9 +213,15 @@ export default function Game() {
                 {/* Notification Overlays */}
                 <NotificationOverlay src={game_won_image} visible={gameWon} />
                 <NotificationOverlay src={game_lost_image} visible={gameLost} />
-                {/* Game paused/waiting to start overlay */}
-                <GameOverlay visible={selectingDifficulty}>
-                    <div className="flex flex-col items-center justify-top bg-slate-200 w-1/2 h-1/2 p-10">
+                {/* Leaderboard */}
+                <GameOverlay visible={currentMenu === MenuType.Leaderboard}>
+                    <div className="flex flex-col items-center bg-slate-200 w-1/2 h-1/2 p-10">
+                       <h1>{difficultyString} Leaderboard:</h1> 
+                    </div>
+                </GameOverlay>
+                {/* Settings Overlay */}
+                <GameOverlay visible={currentMenu === MenuType.Settings}>
+                    <div className="flex flex-col items-center bg-slate-200 w-1/2 h-1/2 p-10">
                         <h1>Select Difficulty:</h1>
                         <form onSubmit={handleDifficultySelectSubmit} className="flex flex-col">
                             <div className="flex flex-col justify-between">
@@ -322,9 +341,15 @@ export default function Game() {
                 </button>
                 <button
                     className="border border-black p-1 hover:bg-slate-300"
-                    onClick={(e) => setSelectingDifficulty(prev => !prev)}
+                    onClick={(e) => setCurrentMenu(prev => prev === MenuType.Settings ? MenuType.None : MenuType.Settings)}
                 >
                     Settings
+                </button>
+                <button
+                    className="border border-black p-1 hover:bg-slate-300"
+                    onClick={(e) => setCurrentMenu(prev => prev === MenuType.Leaderboard ? MenuType.None : MenuType.Leaderboard)}
+                >
+                    Leaderboard
                 </button>
                 <select onChange={(e) => setDifficulty(Number(e.target.value))}>
                     <option value={Difficulty.Easy}>Easy</option>
