@@ -8,6 +8,7 @@ import { images } from "@/src/assets/minesweeperImages";
 import * as utils from './utils';
 import NotificationOverlay from "@/app/components/NotificationOverlay";
 import GameOverlay from "@/app/components/GameOverlay";
+import Image from "next/image";
 
 enum Difficulty {
     Easy,
@@ -25,6 +26,7 @@ const COLS = 10;
 const NUM_MINES = 25;
 const game_lost_image = images.gameOver;
 const game_won_image = images.gameWon;
+const leaderboard_icon = images.leaderboard_icon;
 
 
 export default function Game() {
@@ -225,7 +227,16 @@ export default function Game() {
                 <NotificationOverlay src={game_lost_image} visible={gameLost} />
                 {/* Leaderboard */}
                 <GameOverlay visible={currentMenu === MenuType.Leaderboard}>
-                    <div className="flex flex-col items-center justify-center bg-slate-200 w-1/2 h-1/2 p-10">
+                    <div className="flex flex-col items-center justify-center bg-slate-200 w-1/2 h-1/2 p-5">
+                        <div className="relative w-1/2 h-1/3">
+                            <Image
+                                src={leaderboard_icon}
+                                fill={true}
+                                alt="Leaderboard icon"
+                                draggable={false}
+                                onContextMenu={(e) => e.preventDefault()}
+                            />
+                        </div>
                        <h1 className="font-semibold">{difficultyString} Leaderboard:</h1> 
                        {leaderboard && difficulty === Difficulty.Easy && <ul className="overflow-y-auto">
                             {leaderboard.easy?.map((entry: any) => 
