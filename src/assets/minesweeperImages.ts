@@ -13,6 +13,7 @@ import flag from './minesweeper-flag.svg';
 import unknown from './minesweeper-unknown.svg';
 import gameOver from './game_over.svg';
 import gameWon from './game_won.svg';
+import leaderboard_icon from './leaderboard_icon.svg';
 
 export const images = {
     one,
@@ -30,6 +31,7 @@ export const images = {
     mine,
     gameOver,
     gameWon,
+    leaderboard_icon,
 }
 
 export function getImageSrc(value: number): typeof one {
