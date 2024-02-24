@@ -228,7 +228,7 @@ export default function Game() {
                 {/* Leaderboard */}
                 <GameOverlay visible={currentMenu === MenuType.Leaderboard}>
                     <div className="flex flex-col items-center justify-center bg-slate-200 w-1/2 h-1/2 p-5">
-                        <div className="relative w-1/2 h-1/3">
+                        <div className="relative w-1/2 h-1/3 select-none">
                             <Image
                                 src={leaderboard_icon}
                                 fill={true}
