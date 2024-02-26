@@ -128,6 +128,7 @@ export default function Game() {
             numCleared: clearedCellsCount + numCleared,
             numRows: rows,
             numCols: cols,
+            difficulty: difficultyString,
         };
         await createMinesweeperScore(newScore);
     }

@@ -180,36 +180,36 @@ export async function getMinesweeperLeaderboard() {
         // TODO Change numMines to new difficulty identifier when database schema is changed.
         const easy = await prisma.minesweeperScores.findMany({
             where: {
+                difficulty: "Easy",
                 win: true,
-                numMines: 25,
             },
             orderBy: [{ time: 'asc' }],
             include: {
                 users: true
             },
-            take: 10
+            take: 5 
         });
         const medium = await prisma.minesweeperScores.findMany({
             where: {
+                difficulty: "Medium",
                 win: true,
-                numMines: 35,
             },
             orderBy: [{ time: 'asc' }],
             include: {
                 users: true
             },
-            take: 10
+            take: 5 
         });
         const hard = await prisma.minesweeperScores.findMany({
             where: {
+                difficulty: "Hard",
                 win: true,
-                numMines: 45,
             },
             orderBy: [{ time: 'asc' }],
             include: {
                 users: true
             },
-            take: 10
+            take: 5 
         });
         return { easy, medium, hard };
     } catch (error) {
