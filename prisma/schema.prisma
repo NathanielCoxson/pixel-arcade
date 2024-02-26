@@ -25,6 +25,7 @@ model minesweeperScores {
   numCleared Int
   numRows    Int
   numCols    Int
+  difficulty String   @db.VarChar
   users      users    @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "minesweeperScores_users_fkey")
 }
 
