@@ -217,3 +217,22 @@ export async function getMinesweeperLeaderboard() {
         throw error;
     }
 }
+
+export async function getUsersWhereUsernameStartsWith(username: string) {
+    try {
+        const users = await prisma.users.findMany({ 
+            select: {
+                id: true,
+                username: true,
+            },
+            where: { 
+                username: { startsWith: username } 
+            },
+            take: 10,
+        });
+        return users;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
