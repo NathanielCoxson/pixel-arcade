@@ -3,6 +3,7 @@ import GameStats from "../components/GameStats";
 import { MinesweeperScore, SnakeScore } from "../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
 import BackButton from "../components/BackButton";
+import Link from "next/link";
 
 export default async function Dashboard() {
     const session = await auth();
@@ -39,6 +40,7 @@ export default async function Dashboard() {
                     scores={snakeScores}
                 /> 
             </div>}
+            <Link href="/addFriend">Add a Friend</Link>
         </main>
     )
 }
