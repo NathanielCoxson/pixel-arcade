@@ -1,10 +1,10 @@
 import { auth } from "@/auth";
-import GameStats from "../components/GameStats";
-import { MinesweeperScore, SnakeScore } from "../types";
+import GameStats from "../../components/GameStats";
+import { MinesweeperScore, SnakeScore } from "../../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
-import BackButton from "../components/BackButton";
+import BackButton from "../../components/BackButton";
 
-export default async function Dashboard() {
+export default async function Dashboard({ params }: { params: { username: string } }) {
     const session = await auth();
     let minesweeperScores: MinesweeperScore[] = []; 
     let snakeScores: SnakeScore[] = []; 
