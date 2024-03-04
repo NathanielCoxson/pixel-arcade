@@ -91,14 +91,17 @@ export async function authenticate(
 }
 
 /**
- * Returns an array of minesweeper score objects for the user with the given uid. 
- * @param {string} uid 
+ * Returns an array of minesweeper score objects for the user with the given username. 
+ * @param {string} username 
  * @returns an array of minesweeper scores 
  */
-export async function getMinesweeperScores(uid: string | undefined) {
-    if (!uid) return [];
+export async function getMinesweeperScores(username: string | undefined) {
+    if (!username) return [];
     try {
-        const scores = await prisma.minesweeperScores.findMany({ where: { uid } });
+        const user = await prisma.users.findFirst({ where: { username } });
+        if (!user) return [];
+
+        const scores = await prisma.minesweeperScores.findMany({ where: { uid: user.id } });
         return scores;
     } catch (error) {
         console.log(error);
@@ -136,13 +139,16 @@ export async function createSnakeScore(score: any) {
 
 /**
  * Returns a list of the snake score objects for the user with the given uid. 
- * @param {string} uid 
+ * @param {string} username 
  * @returns a list of scores 
  */
-export async function getSnakeScores(uid: string | undefined) {
-    if (!uid) return [];
+export async function getSnakeScores(username: string | undefined) {
+    if (!username) return [];
     try {
-        const scores = await prisma.snakeScores.findMany({ where: { uid } });
+        const user = await prisma.users.findFirst({ where: { username } });
+        if (!user) return [];
+
+        const scores = await prisma.snakeScores.findMany({ where: { uid: user.id } });
         return scores;
     } catch (error) {
         console.log(error);
