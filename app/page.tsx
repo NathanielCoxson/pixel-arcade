@@ -14,7 +14,7 @@ export default async function Home() {
 
       <div className='text-center flex flex-col gap-4 content-center justify-center'>
         {session && <Link
-          href="/dashboard" 
+          href={`dashboard/${session?.user?.name}`}
           className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
         >
           Dashboard
