@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import GameStats from "../../components/GameStats";
 import { MinesweeperScore, SnakeScore } from "../../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
+import Link from "next/link";
 import BackButton from "../../components/BackButton";
 
 export default async function Dashboard({ params }: { params: { username: string } }) {
@@ -39,6 +40,7 @@ export default async function Dashboard({ params }: { params: { username: string
                     scores={snakeScores}
                 /> 
             </div>}
+            <Link href="/addFriend">Add a Friend</Link>
         </main>
     )
 }
