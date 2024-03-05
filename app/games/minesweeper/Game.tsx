@@ -9,6 +9,7 @@ import * as utils from './utils';
 import NotificationOverlay from "@/app/components/NotificationOverlay";
 import GameOverlay from "@/app/components/GameOverlay";
 import Image from "next/image";
+import Link from "next/link";
 
 enum Difficulty {
     Easy,
@@ -243,7 +244,7 @@ export default function Game() {
                             {leaderboard.easy?.map((entry: any) => 
                                 <li key={entry.id}>
                                     <div className="flex justify-between">
-                                        <p>{entry.users.username}</p>
+                                        <Link href={`/dashboard/${entry.users.username}`}>{entry.users.username}</Link>
                                         <p>{entry.time}s</p>
                                     </div>
                                 </li>
@@ -253,7 +254,7 @@ export default function Game() {
                             {leaderboard.medium?.map((entry: any) => 
                                 <li key={entry.id}>
                                     <div className="flex justify-between">
-                                        <p>{entry.users.username}</p>
+                                        <Link href={`/dashboard/${entry.users.username}`}>{entry.users.username}</Link>
                                         <p>{entry.time}s</p>
                                     </div>
                                 </li>
@@ -263,7 +264,7 @@ export default function Game() {
                             {leaderboard.hard?.map((entry: any) => 
                                 <li key={entry.id}>
                                     <div className="flex justify-between">
-                                        <p>{entry.users.username}</p>
+                                        <Link href={`/dashboard/${entry.users.username}`}>{entry.users.username}</Link>
                                         <p>{entry.time}s</p>
                                     </div>
                                 </li>
