@@ -239,30 +239,30 @@ export default function Game() {
                             />
                         </div>
                        <h1 className="font-semibold">{difficultyString} Leaderboard:</h1> 
-                       {leaderboard && difficulty === Difficulty.Easy && <ul className="overflow-y-auto">
+                       {leaderboard && difficulty === Difficulty.Easy && <ul className="overflow-y-auto w-1/2">
                             {leaderboard.easy?.map((entry: any) => 
                                 <li key={entry.id}>
-                                    <div className="flex gap-10">
+                                    <div className="flex justify-between">
                                         <p>{entry.users.username}</p>
                                         <p>{entry.time}s</p>
                                     </div>
                                 </li>
                             )} 
                         </ul>}
-                       {leaderboard && difficulty === Difficulty.Medium && <ul className="overflow-y-auto">
+                       {leaderboard && difficulty === Difficulty.Medium && <ul className="overflow-y-auto w-1/2">
                             {leaderboard.medium?.map((entry: any) => 
                                 <li key={entry.id}>
-                                    <div className="flex gap-10">
+                                    <div className="flex justify-between">
                                         <p>{entry.users.username}</p>
                                         <p>{entry.time}s</p>
                                     </div>
                                 </li>
                             )} 
                         </ul>}
-                       {leaderboard && difficulty === Difficulty.Hard && <ul className="overflow-y-auto">
+                       {leaderboard && difficulty === Difficulty.Hard && <ul className="overflow-y-auto w-1/2">
                             {leaderboard.hard?.map((entry: any) => 
                                 <li key={entry.id}>
-                                    <div className="flex gap-10">
+                                    <div className="flex justify-between">
                                         <p>{entry.users.username}</p>
                                         <p>{entry.time}s</p>
                                     </div>
