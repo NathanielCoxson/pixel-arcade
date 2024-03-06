@@ -1,24 +1,39 @@
 "use client";
-import { getUsersWhereUsernameStartsWith } from "@/src/lib/actions";
+import { createFriendRequest, getUsersWhereUsernameStartsWith } from "@/src/lib/actions";
 import { SyntheticEvent, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { navigate } from "@/src/lib/actions";
 
 export default function AddFriend() {
+    const { data: session } = useSession();
+    if (!session) {
+        navigate("/");
+    }
+
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [searchResults, setSearchResults] = useState<string[]>([]);
+    const [searchResults, setSearchResults] = useState<{username: string, id: string}[]>([]);
+    const [response, setResponse] = useState<string | null>(null);
+
 
     async function handleSubmit(e: SyntheticEvent) {
         e.preventDefault();
-        console.log(searchTerm);
-        const result = await getUsersWhereUsernameStartsWith(searchTerm);
-        setSearchResults(result.map((result: any) => result.username));
-        console.log(result);
+        // Search for users, then filter out current user.
+        const result = (await getUsersWhereUsernameStartsWith(searchTerm))
+            .filter((user: any) => user.username !== session?.user?.name);
+        setSearchResults(result);
     }
 
-    //async function handleAddFriend(e: SyntheticEvent) {
-    //    e.preventDefault();
-
-    //}
+    async function handleAddFriend(e: SyntheticEvent, receiver: { username: string, id: string }) {
+        e.preventDefault();
+        const { success, message } = await createFriendRequest(session?.user?.id, receiver.id);
+        if (success) {
+            setResponse(`Friend request successfully sent to : ${receiver.username}`);
+            setSearchResults(prev => prev.filter((result: { username: string, id: string}) => result.id !== receiver.id));
+        } else {
+            setResponse(message);
+        }
+    }
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-center text-center p-24 gap-4">
@@ -35,16 +50,18 @@ export default function AddFriend() {
 
 
             {searchResults.length > 0 && <ul>
-                {searchResults.map((result: string) => <li key={result} className="flex gap-4">
+                {searchResults.map((result: { username: string, id: string }) => <li key={result.username} className="flex gap-4">
                         <Link 
-                            href={`/dashboard/${result}`}
+                            href={`/dashboard/${result.username}`}
                             className="hover:font-bold transition-all"
+                            onClick={(e) => handleAddFriend(e, result)}
                         >
-                            {result}
+                            {result.username}
                         </Link>
                 </li>)}
             </ul>}
 
+            {response && <div>{response}</div>}
         </main>
     )
 }
