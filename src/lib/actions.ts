@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
+import { redirect } from "next/navigation";
 
 const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 const NewUserFormSchema = z.object({
@@ -241,4 +242,26 @@ export async function getUsersWhereUsernameStartsWith(username: string) {
         console.log(error);
         throw error;
     }
+}
+
+export async function createFriendRequest(senderId: string | undefined, receiverId: string): Promise<{ success: boolean, message: string }> {
+    if (!senderId) return { success: false, message: "User is not logged in." };
+    try {
+        const pending_sender_requests = await prisma.friendRequests.findMany({ where: { senderId, receiverId } });
+        if (pending_sender_requests.length > 0) return { success: false, message: "You have already sent a friend request to that user." };
+        console.log(pending_sender_requests);
+
+        const pending_receiver_requests = await prisma.friendRequests.findMany({ where: { senderId: receiverId, receiverId: senderId } });
+        if (pending_receiver_requests.length > 0) return { success: false, message: "You already have a pending friend request from that user." };
+
+        await prisma.friendRequests.create({ data: { senderId, receiverId } });
+        return { success: true, message: "Success" };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+export async function navigate(url: string) {
+    redirect(url);
 }

@@ -8,11 +8,15 @@ datasource db {
 }
 
 model users {
-  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username          String              @db.VarChar
-  password          String              @db.VarChar
-  minesweeperScores minesweeperScores[]
-  snakeScores       snakeScores[]
+  id                                              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username                                        String              @db.VarChar
+  password                                        String              @db.VarChar
+  friendRequests_friendRequests_receiverIdTousers friendRequests[]    @relation("friendRequests_receiverIdTousers")
+  friendRequests_friendRequests_senderIdTousers   friendRequests[]    @relation("friendRequests_senderIdTousers")
+  friends_friends_friendIdTousers                 friends[]           @relation("friends_friendIdTousers")
+  friends_friends_uidTousers                      friends[]           @relation("friends_uidTousers")
+  minesweeperScores                               minesweeperScores[]
+  snakeScores                                     snakeScores[]
 }
 
 model minesweeperScores {
@@ -37,4 +41,20 @@ model snakeScores {
   numCols   Int
   timestamp DateTime @default(now()) @db.Timestamptz(6)
   users     users    @relation(fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "snakeScores_users_fkey")
+}
+
+model friendRequests {
+  id                                     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId                               String @db.Uuid
+  receiverId                             String @db.Uuid
+  users_friendRequests_receiverIdTousers users  @relation("friendRequests_receiverIdTousers", fields: [receiverId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "friendRequests_users_receiverId_fkey")
+  users_friendRequests_senderIdTousers   users  @relation("friendRequests_senderIdTousers", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "friendRequests_users_senderId_fkey")
+}
+
+model friends {
+  id                            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uid                           String @db.Uuid
+  friendId                      String @db.Uuid
+  users_friends_friendIdTousers users  @relation("friends_friendIdTousers", fields: [friendId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "friends_users_friendId_fkey")
+  users_friends_uidTousers      users  @relation("friends_uidTousers", fields: [uid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "friends_users_uid_fkey")
 }
