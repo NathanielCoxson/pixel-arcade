@@ -49,9 +49,3 @@ describe('calculateAdjacentMines', () => {
         expect(adjacentMines).toBe(1);
     });
 });
-
-describe('actions test', () => {
-    it('should block merge on failure', () => {
-        expect(false).toBe(true);
-    });
-});
