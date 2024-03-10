@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { authenticate } from "@/src/lib/actions";
+import { authenticate } from "@/src/lib/authActions";
 import Link from "next/link";
 
 export default function Login() {
