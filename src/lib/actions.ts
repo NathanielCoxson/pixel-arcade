@@ -5,6 +5,7 @@ import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
+import { FriendRequest, Response } from "@/app/types";
 
 const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 const NewUserFormSchema = z.object({
@@ -261,6 +262,36 @@ export async function createFriendRequest(senderId: string | undefined, receiver
         throw error;
     }
 }
+
+export async function getFriendRequests(username: string): Promise<Response> {
+    try {
+        const friend_requests: FriendRequest[] = (await prisma.friendRequests.findMany({
+            include: {
+                users_friendRequests_senderIdTousers: { select: { username: true } },
+                users_friendRequests_receiverIdTousers: { select: { username: true } },
+            },
+            where: {
+                users_friendRequests_receiverIdTousers: { username }
+            }
+        })).map((res: any) => {
+            return {
+                id: res.id,
+                senderId: res.senderId,
+                receiverId: res.receiverId,
+                senderUsername: res.users_friendRequests_senderIdTousers.username,
+                receiverUsername: res.users_friendRequests_receiverIdTousers.username,
+            }
+        });
+        return { success: true, message: "", data: friend_requests };
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: "", data: [] };
+    }
+}
+
+//export async function acceptFriendRequest(id: string) {
+//
+//}
 
 export async function navigate(url: string) {
     redirect(url);

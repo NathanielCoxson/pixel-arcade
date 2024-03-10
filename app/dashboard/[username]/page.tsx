@@ -1,12 +1,17 @@
 import GameStats from "../../components/GameStats";
-import { MinesweeperScore, SnakeScore } from "../../types";
-import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
+import { MinesweeperScore, SnakeScore, FriendRequest } from "../../types";
+import { getFriendRequests, getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
 import Link from "next/link";
 import BackButton from "../../components/BackButton";
+import FriendRequestEntry from "@/app/components/FriendRequestEntry";
+import { auth } from "@/auth";
 
 export default async function Dashboard({ params }: { params: { username: string } }) {
+    const session = await auth();
+
     let minesweeperScores: MinesweeperScore[] = []; 
     let snakeScores: SnakeScore[] = []; 
+    const friendRequests: FriendRequest[] = (await getFriendRequests(params.username)).data;
 
     // Minesweeper information
     minesweeperScores = await getMinesweeperScores(params.username);
@@ -38,7 +43,15 @@ export default async function Dashboard({ params }: { params: { username: string
                     scores={snakeScores}
                 />}
             </div>
-            <Link href="/addFriend">Add a Friend</Link>
+
+            {/* If loggin in user is the owner of the account displayed */}
+            {session?.user?.name === params.username && <div>
+                {friendRequests.length > 0 && <div>
+                    <h2>Friend Requests</h2>
+                    {friendRequests.map((req: FriendRequest) => <FriendRequestEntry key={req.id} request={req} />)}
+                </div>}
+                <Link href="/addFriend">Add a Friend</Link>
+            </div>}
         </main>
     )
 }
