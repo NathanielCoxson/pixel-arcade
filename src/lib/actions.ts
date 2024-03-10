@@ -250,10 +250,17 @@ export async function createFriendRequest(senderId: string | undefined, receiver
     try {
         const pending_sender_requests = await prisma.friendRequests.findMany({ where: { senderId, receiverId } });
         if (pending_sender_requests.length > 0) return { success: false, message: "You have already sent a friend request to that user." };
-        console.log(pending_sender_requests);
 
         const pending_receiver_requests = await prisma.friendRequests.findMany({ where: { senderId: receiverId, receiverId: senderId } });
         if (pending_receiver_requests.length > 0) return { success: false, message: "You already have a pending friend request from that user." };
+
+        const friend = await prisma.friends.findFirst({
+            where: {
+                uid: senderId,
+                friendId:  receiverId,
+            }
+        });
+        if (friend) return { success: false, message: "Already friends with that user" };
 
         await prisma.friendRequests.create({ data: { senderId, receiverId } });
         return { success: true, message: "Success" };
@@ -263,7 +270,8 @@ export async function createFriendRequest(senderId: string | undefined, receiver
     }
 }
 
-export async function getFriendRequests(username: string): Promise<Response> {
+export async function getFriendRequests(username: string | null | undefined): Promise<Response> {
+    if (!username) return { success: false, message: "User is not logged in", data: undefined };
     try {
         const friend_requests: FriendRequest[] = (await prisma.friendRequests.findMany({
             include: {
@@ -289,9 +297,43 @@ export async function getFriendRequests(username: string): Promise<Response> {
     }
 }
 
-//export async function acceptFriendRequest(id: string) {
-//
-//}
+export async function acceptFriendRequest(id: string): Promise<Response> {
+    try {
+        const friend_request = await prisma.friendRequests.findUnique({ where: { id } });
+        if (!friend_request) {
+            return { success: false, message: "Couldn't find friend request", data: undefined };
+        }
+
+        await prisma.friends.create({
+            data: {
+                uid: friend_request.receiverId,
+                friendId: friend_request.senderId,
+            }
+        });
+        await prisma.friends.create({
+            data: {
+                uid: friend_request.senderId,
+                friendId: friend_request.receiverId,
+            }
+        });
+
+        await prisma.friendRequests.delete({ where: { id } });
+        return { success: true, message: "", data: undefined };
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: "Failed to accept friend request", data: undefined };
+    }
+}
+
+export async function rejectFriendRequest(id: string): Promise<Response> {
+    try {
+        await prisma.friendRequests.delete({ where: { id } });
+        return { success: true, message: "", data: undefined };
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: "Failed to reject friend request", data: undefined };
+    }
+}
 
 export async function navigate(url: string) {
     redirect(url);
