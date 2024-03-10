@@ -18,3 +18,17 @@ export type SnakeScore = {
     numCols: number,
     timestamp: Date,
 }
+
+export type Response = {
+    success: boolean,
+    message: string,
+    data: any
+}
+
+export type FriendRequest = {
+    id: string,
+    senderId: string,
+    receiverId: string,
+    senderUsername: string,
+    receiverUsername: string,
+}

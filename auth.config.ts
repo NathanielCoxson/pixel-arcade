@@ -11,13 +11,19 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      }
-      else if (isOnLogin) {
+      const isOnAddFriend = nextUrl.pathname.startsWith('/addFriend');
+
+      //const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      //if (isOnDashboard) {
+      //  if (isLoggedIn) return true;
+      //  return false; // Redirect unauthenticated users to login page
+      //}
+
+      if (isOnAddFriend && !isLoggedIn) {
+          return Response.redirect(new URL('/', nextUrl));
+      } 
+      if (isOnLogin) {
         if (isLoggedIn) return Response.redirect(new URL('/', nextUrl));
       }
       return true;

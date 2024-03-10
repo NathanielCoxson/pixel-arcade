@@ -1,10 +1,14 @@
 import GameStats from "../../components/GameStats";
 import { MinesweeperScore, SnakeScore } from "../../types";
 import { getMinesweeperScores, getSnakeScores } from "@/src/lib/actions";
-import Link from "next/link";
 import BackButton from "../../components/BackButton";
+import FriendRequestsPanel from "@/app/components/FriendRequestsPanel";
+import { auth } from "@/auth"; 
+import Link from "next/link";
 
 export default async function Dashboard({ params }: { params: { username: string } }) {
+    const session = await auth();
+
     let minesweeperScores: MinesweeperScore[] = []; 
     let snakeScores: SnakeScore[] = []; 
 
@@ -38,7 +42,11 @@ export default async function Dashboard({ params }: { params: { username: string
                     scores={snakeScores}
                 />}
             </div>
-            <Link href="/addFriend">Add a Friend</Link>
+
+            {session && session.user?.name == params.username && <div>
+                <FriendRequestsPanel />
+                <Link href="/addFriend">Add a friend</Link>
+            </div>}
         </main>
     )
 }
