@@ -16,7 +16,7 @@ const testBoard = [
     [0, 0, -1, 0, 0, 0, 0, -1, -1, -1],
 ]
 
-describe('getMineBoard', () => {
+describe('getMineBoard()', () => {
     it('returns a matrix with the correct dimensions', () => {
         const board = utils.getMineBoard(NUM_ROWS, NUM_COLS, NUM_MINES);
         expect(board.length).toBe(5);
@@ -35,7 +35,7 @@ describe('getMineBoard', () => {
     });
 });
 
-describe('calculateAdjacentMines', () => {
+describe('calculateAdjacentMines()', () => {
     it('returns 0 when there are no adjacent mines', () => {
         const adjacentMines = utils.calculateAdjacentMines(1, 8, testBoard);
         expect(adjacentMines).toBe(0);
