@@ -1,8 +1,6 @@
 'use server';
 import prisma from "./prisma";
 import { z } from 'zod';
-import { signIn } from "@/auth";
-import { AuthError } from "next-auth";
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { FriendRequest, Response } from "@/app/types";
@@ -64,32 +62,6 @@ export async function createUser(prevState: any, formData: FormData) {
         ...prevState,
         message: 'Success!'
     };
-}
-
-/**
- * Login server action that authenticates a user given their password and username
- * as credentials. 
- * @param prevState 
- * @param formData 
- * @returns 
- */
-export async function authenticate(
-    prevState: string | undefined,
-    formData: FormData,
-) {
-    try {
-        await signIn('credentials', { username: formData.get('username'), password: formData.get('password') });
-    } catch (error) {
-        if (error instanceof AuthError) {
-            switch (error.type) {
-                case 'CredentialsSignin':
-                    return 'Invalid credentials.';
-                default:
-                    return 'Something went wrong.';
-            }
-        }
-        throw error;
-    }
 }
 
 /**
