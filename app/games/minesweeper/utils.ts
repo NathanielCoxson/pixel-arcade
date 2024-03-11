@@ -26,7 +26,7 @@ export function getShuffledArray(arr: number[]): number[] {
     return arr;
 }
 
-function getEmptyBoard(rows: number, cols: number) {
+export function getEmptyBoard(rows: number, cols: number) {
     return Array.from({ length: cols }, () => Array(rows).fill(0));
 }
 
