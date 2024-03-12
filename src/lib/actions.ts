@@ -4,6 +4,7 @@ import { z } from 'zod';
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { FriendRequest, Response } from "@/app/types";
+import { auth } from "@/auth";
 
 const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 const NewUserFormSchema = z.object({
@@ -87,13 +88,18 @@ export async function getMinesweeperScores(username: string | undefined) {
  * Creates a new minesweeper score in the database.
  * @param {MinesweeperScore} score 
  */
-export async function createMinesweeperScore(score: any) {
+export async function createMinesweeperScore(score: any): Promise<Response> {
+    const session = await auth();
+    const correctUser = session?.user?.id === score.uid;
+    if (!session || !correctUser) return { success: false, message: "No user logged in", data: null };
+
     try {
         const newScore = await prisma.minesweeperScores.create({ data: score });
         console.log("Created new minesweeper score: ", newScore);
+        return { success: true, message: undefined, data: newScore };
     } catch(error) {
         console.log(error);
-        throw error;
+        return { success: false, message: "Failed to create new minesweeper score.", data: null };
     }
 }
 

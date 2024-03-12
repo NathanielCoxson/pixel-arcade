@@ -21,7 +21,7 @@ export type SnakeScore = {
 
 export type Response = {
     success: boolean,
-    message: string,
+    message: string | undefined | null,
     data: any
 }
 
