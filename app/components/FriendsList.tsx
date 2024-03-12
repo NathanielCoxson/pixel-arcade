@@ -12,8 +12,8 @@ export default async function FriendsList() {
     if (!friends || friends.length < 0) return <></>;
 
     return (
-        <div className="flex flex-col">
-           <h2 className="font-semibold text-2xl">Friends List</h2> 
+        <div className="flex flex-col border border-slate-500 rounded-md p-4">
+           <h2 className="font-semibold text-2xl">Friends</h2> 
            {friends.map((friend: any) => {
                return <Link 
                    href={`/dashboard/${friend.username}`} 
