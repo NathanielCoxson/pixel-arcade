@@ -350,7 +350,6 @@ export async function getFriends(uid: string | undefined): Promise<Response> {
                 username: friend.users_friends_friendIdTousers.username
             }
         });
-        console.log(friends);
         return { success: true, message: null, data: friends };
     } catch (error) {
         console.log(error);
