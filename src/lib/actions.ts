@@ -17,6 +17,20 @@ const NewUserFormSchema = z.object({
         { message: 'Passwords do not match' }
     );
 
+export async function validateUserByID(id: string): Promise<boolean> {
+    const session = await auth();
+    const correctUser = session?.user?.id === id;
+    if (!session || !correctUser) return false;
+    return true;
+}
+
+export async function validateUserByUsername(username: string): Promise<boolean> {
+    const session = await auth();
+    const correctUser = session?.user?.name === username;
+    if (!session || !correctUser) return false;
+    return true;
+}
+
 /**
  * Server action that creates a new user in the database given a new user object. 
  * @param prevState 
@@ -89,9 +103,9 @@ export async function getMinesweeperScores(username: string | undefined) {
  * @param {MinesweeperScore} score 
  */
 export async function createMinesweeperScore(score: any): Promise<Response> {
-    const session = await auth();
-    const correctUser = session?.user?.id === score.uid;
-    if (!session || !correctUser) return { success: false, message: "No user logged in", data: null };
+    if (!await validateUserByID(score.uid)) { 
+        return { success: false, message: "No user logged in", data: null };
+    }
 
     try {
         const newScore = await prisma.minesweeperScores.create({ data: score });
@@ -313,6 +327,37 @@ export async function rejectFriendRequest(id: string): Promise<Response> {
     }
 }
 
+export async function getFriends(uid: string | undefined): Promise<Response> {
+    if (!uid) {
+        return { success: false, message: "No user logged in.", data: null};
+    }
+    if (! await validateUserByID(uid)) {
+        return { success: false, message: "User is not logged in.", data: null };
+    }
+
+    try {
+        const friends = (await prisma.friends.findMany({
+            include: {
+                users_friends_friendIdTousers: { select: { username: true } }
+            },
+            where: {
+                uid
+            }
+        }))
+        .map((friend: any) => {
+            return {
+                uid: friend.friendId,
+                username: friend.users_friends_friendIdTousers.username
+            }
+        });
+        return { success: true, message: null, data: friends };
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: "Failed to retrieve friends.", data: null };
+    }
+}
+
 export async function navigate(url: string) {
     redirect(url);
 }
+
