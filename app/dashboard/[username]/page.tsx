@@ -47,9 +47,9 @@ export default async function Dashboard({ params }: { params: { username: string
             {session && session.user?.name == params.username && <div>
                 <FriendRequestsPanel />
                 <Link href="/addFriend">Add a friend</Link>
+                <FriendsList />
             </div>}
 
-            <FriendsList />
         </main>
     )
 }

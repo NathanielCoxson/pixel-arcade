@@ -1,11 +1,15 @@
 'use server';
 
+import { auth } from "@/auth";
+import { getFriends } from "@/src/lib/actions";
 import Link from "next/link";
 
-const friends = [{uid: '1234', username: 'asdf'}];
-
 export default async function FriendsList() {
-    if (friends.length < 0) return <></>;
+    const session = await auth();
+    if (!session || !session?.user?.id) return;
+
+    const { data: friends } = await getFriends(session?.user?.id);
+    if (!friends || friends.length < 0) return <></>;
 
     return (
         <div className="flex flex-col">
@@ -13,7 +17,7 @@ export default async function FriendsList() {
            {friends.map((friend: any) => {
                return <Link 
                    href={`/dashboard/${friend.username}`} 
-                   key={`friend-${friend.uid}`}
+                   key={`friend-${friend.friend}`}
                    className="text-xl hover:font-semibold transition-all"
                >
                    {friend.username}

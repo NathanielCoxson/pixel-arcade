@@ -327,14 +327,36 @@ export async function rejectFriendRequest(id: string): Promise<Response> {
     }
 }
 
-//export async function getFriendRequests(id: string): Promise<Response> {
-//    try {
-//        
-//    } catch (error) {
-//        console.log(error);
-//        return { success: false, message: "Failed to retrieve friends.", data: null };
-//    }
-//}
+export async function getFriends(uid: string | undefined): Promise<Response> {
+    if (!uid) {
+        return { success: false, message: "No user logged in.", data: null};
+    }
+    if (! await validateUserByID(uid)) {
+        return { success: false, message: "User is not logged in.", data: null };
+    }
+
+    try {
+        const friends = (await prisma.friends.findMany({
+            include: {
+                users_friends_friendIdTousers: { select: { username: true } }
+            },
+            where: {
+                uid
+            }
+        }))
+        .map((friend: any) => {
+            return {
+                uid: friend.friendId,
+                username: friend.users_friends_friendIdTousers.username
+            }
+        });
+        console.log(friends);
+        return { success: true, message: null, data: friends };
+    } catch (error) {
+        console.log(error);
+        return { success: false, message: "Failed to retrieve friends.", data: null };
+    }
+}
 
 export async function navigate(url: string) {
     redirect(url);
