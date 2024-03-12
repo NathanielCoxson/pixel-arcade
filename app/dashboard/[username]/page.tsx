@@ -5,6 +5,7 @@ import BackButton from "../../components/BackButton";
 import FriendRequestsPanel from "@/app/components/FriendRequestsPanel";
 import { auth } from "@/auth"; 
 import Link from "next/link";
+import FriendsList from "@/app/components/FriendsList";
 
 export default async function Dashboard({ params }: { params: { username: string } }) {
     const session = await auth();
@@ -47,6 +48,8 @@ export default async function Dashboard({ params }: { params: { username: string
                 <FriendRequestsPanel />
                 <Link href="/addFriend">Add a friend</Link>
             </div>}
+
+            <FriendsList />
         </main>
     )
 }
