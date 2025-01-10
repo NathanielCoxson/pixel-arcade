@@ -33,12 +33,6 @@ export default async function Home() {
         >
           <h2>MineSweeper</h2>
         </Link>
-        <Link
-          href="/games/tetris"
-          className='text-3xl font-semibold py-4 cursor-pointer transition-all hover:font-bold'
-        >
-          <h2>Tetris</h2>
-        </Link>
 
         {/* Login/Logout */}
         {!session && <Link href="/login">Login</Link>}
